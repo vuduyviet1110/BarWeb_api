@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "nodemon": "^3.1.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "barwebite_api",
+  "version": "1.0.0",
+  "main": "server.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuduyviet1110/BarWeb_api.git"
+  },
+  "author": "viet",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vuduyviet1110/BarWeb_api/issues"
+  },
+  "homepage": "https://github.com/vuduyviet1110/BarWeb_api#readme",
+  "description": ""
+}

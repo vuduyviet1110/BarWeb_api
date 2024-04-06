@@ -1,10 +1,10 @@
-const express = require('express');
+const express = require("express");
 // import api của express là router
 const router = express.Router();
-const newController = require('../app/controllers/NewsController');
+const giftCardController = require("../controllers/GiftCardController");
 
 // đường dẫn gốc
-router.get('/:slug', newController.show);
-router.get('/', newController.index);
+router.get("/", giftCardController.showAll);
+router.get("/:id", giftCardController.showDetails);
 
 module.exports = router;

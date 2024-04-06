@@ -1,14 +1,15 @@
-const accountAuthenticationRoute = require("./accountAuthentication");
 const manageContentRoute = require("./manageContent");
 const manageGiftCardRoute = require("./manageGiftCard");
 const manageReservationRoute = require("./manageReservation");
 const manageUserRoute = require("./manageUser");
+const manageImageRoute = require("./manageImage");
 
-function route(app) {
-  app.use("Admin/accountAuthentication", accountAuthenticationRoute);
-  app.use("Admin/manageContent", manageContentRoute);
-  app.use("Admin/manageGiftCard", manageGiftCardRoute);
-  app.use("Admin/manageReservation", manageReservationRoute);
-  app.use("Admin/managerUser", manageUserRoute);
+function Adroute(app) {
+  app.use("/admin/content", manageContentRoute);
+  app.use("/admin/image", manageImageRoute);
+  app.use("/admin/gift-card", manageGiftCardRoute);
+  app.use("/admin/reservation", manageReservationRoute);
+  app.use("/admin/user", manageUserRoute);
+  app.use("/admin/event", manageUserRoute);
 }
-module.exports = route;
+module.exports = Adroute;

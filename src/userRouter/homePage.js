@@ -1,9 +1,8 @@
 const express = require("express");
 // import api của express là router
 const router = express.Router();
-
-const ReservationUserController = require("../controllers/ReservationUserController");
+const HomePageController = require("../controllers/HomePageController");
 // đường dẫn gốc
+router.get("/", HomePageController.showInfo);
 
-router.post("/:id", ReservationUserController.create);
 module.exports = router;

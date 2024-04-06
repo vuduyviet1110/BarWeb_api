@@ -1,8 +1,6 @@
-class ContentController {
+class BookingController {
   // hiển thị bài viết
-  show(req, res, next) {
-    res.send("hello");
-  }
+  show(req, res, next) {}
 
   // tạo ra bài viết mới
   create(req, res, next) {}
@@ -14,4 +12,4 @@ class ContentController {
   delete(req, res, next) {}
 }
 
-module.exports = new ContentController();
+module.exports = new BookingController();

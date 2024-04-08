@@ -4,8 +4,14 @@ class HomePageController {
   showInfo(req, res) {
     Promise.all([getUsersData()])
       .then(([allUsers]) => {
-        if (allUsers) {
-          res.json(allUsers);
+        const reqId = req.params.id.toString();
+        const matchedId = allUsers.find(
+          (user) => user.user_id.toString() === reqId
+        );
+        if (matchedId) {
+          console.log(matchedId);
+          console.log(reqId);
+          res.json(matchedId);
         } else {
           res.send("No Users have been found");
         }

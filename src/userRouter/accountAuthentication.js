@@ -5,5 +5,5 @@ const SignInController = require("../controllers/UserAuthController");
 
 // đường dẫn gốc
 router.post("/", SignInController.Auth);
-
+router.get("/private/", SignInController.private);
 module.exports = router;

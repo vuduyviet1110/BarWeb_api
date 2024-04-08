@@ -3,6 +3,6 @@ const express = require("express");
 const router = express.Router();
 const HomePageController = require("../controllers/HomePageController");
 // đường dẫn gốc
-router.get("/", HomePageController.showInfo);
+router.get("/:id", HomePageController.showInfo);
 
 module.exports = router;

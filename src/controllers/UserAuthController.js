@@ -1,4 +1,5 @@
 const { connection } = require("../../dbsetup");
+const jwt = require("jsonwebtoken");
 class SinInController {
   // tạo ra bài viết mới
   Auth(req, res, next) {
@@ -14,16 +15,14 @@ class SinInController {
             throw error;
           }
           if (matched_users.length > 0) {
-            // Lấy user_id của người dùng đầu tiên phù hợp
-            const firstUser = matched_users[0];
-            // Tạo cookie
-            res.cookie("User_id", firstUser.user_id, {
-              maxAge: 2 * 60 * 60 * 1000,
-              httpOnly: true,
+            //Lấy user_id của người dùng đầu tiên phù hợp
+            const data = matched_users[0];
+            var token = jwt.sign({ user_id: data.user_id }, "mk");
+            return res.json({
+              msg: "Success",
+              token: token,
+              data: data,
             });
-            // Redirect đến trang của người dùng đầu tiên phù hợp
-            // res.redirect("/id= " + firstUser.user_id);
-            res.send("Có users và được vào");
           } else {
             res.send("Incorrect Username and/or Password!");
           }
@@ -34,6 +33,25 @@ class SinInController {
       res.send("Please enter Username and Password!");
       res.end();
     }
+  }
+  private(req, res, next) {
+    try {
+      var token = req.params.token;
+      var result = jwt.verify(token, "mk");
+      res.send(result);
+      if (result) {
+        next();
+      }
+    } catch (error) {
+      return res.redirect("/");
+    }
+
+    // Nếu xác thực thành công, tiếp tục sang middleware hoặc handler tiếp theo
+  }
+
+  // Handler trả về dữ liệu sau khi xác thực thành công
+  welcome(req, res, next) {
+    res.json({ message: "Welcome" });
   }
 }
 

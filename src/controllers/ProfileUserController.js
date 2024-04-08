@@ -1,6 +1,10 @@
 class ProfileUserController {
   // hiển thị bài viết
-  show(req, res, next) {}
+  show(req, res, next) {
+    const userId = req.params.id;
+
+    res.send("hello " + userId);
+  }
 
   // tạo ra bài viết mới
   create(req, res, next) {}

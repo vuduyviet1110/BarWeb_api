@@ -4,13 +4,15 @@ const purchaseGiftCardRoute = require("./purchaseGiftCard");
 const homePage = require("./homePage");
 const signUpRoute = require("./sign-up");
 const accountAuthenticationRoute = require("./accountAuthentication");
+const changePasswordRoute = require("./changePwd");
 function Userroute(app) {
-  app.use("/profile", editAccountRoute);
-  app.use("/reservation", placeReservationRoute);
-  app.use("/giftCard", purchaseGiftCardRoute);
-  app.use("/", homePage);
   app.use("/sign-in", accountAuthenticationRoute);
   app.use("/sign-up", signUpRoute);
+  app.use("/:id/profile", editAccountRoute);
+  app.use("/:id/reservation", placeReservationRoute);
+  app.use("/:id/giftCard", purchaseGiftCardRoute);
+  app.use("/", homePage);
+  app.use("/change-password", changePasswordRoute);
 }
 module.exports = Userroute;
 

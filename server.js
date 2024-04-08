@@ -4,19 +4,21 @@ const port = 8000;
 const Adroute = require("./src/adminRouter");
 const UserRoute = require("./src/userRouter");
 const cors = require("cors");
+const cookiesParser = require("cookie-parser");
 const methodOverride = require("method-override");
 const { configCors } = require("./src/config/cors");
+
 //Use custome middleware
-
-// override lại các phương thức mặc định của form html theo chuẩn Restfull Api
 app.use(methodOverride("_method"));
-
-app.use(express.urlencoded());
+app.use(cookiesParser());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors(configCors));
+
 //route
 Adroute(app);
 UserRoute(app);
+
 // Các function
 
 //lắng nghe port

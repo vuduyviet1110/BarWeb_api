@@ -4,7 +4,7 @@ const router = express.Router();
 const ProfileUserController = require("../controllers/ProfileUserController");
 
 // đường dẫn gốc
-router.put("/profile", ProfileUserController.edit);
-router.get("/profile", ProfileUserController.show);
+router.put("/", ProfileUserController.edit);
+router.get("/", ProfileUserController.show);
 
 module.exports = router;

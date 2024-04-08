@@ -249,12 +249,36 @@ function getUsersData() {
   });
 }
 
-async function getUserbyID(id) {
-  const [rows] = await connection.query(
-    `Select * From user Where user_id = ?`,
-    [id]
-  );
-  return rows[0];
+function UpdatePassword(id, password) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "UPDATE users SET user_password = ? WHERE user_id = ?",
+      [password, id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
+function getUserById(userId) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "SELECT * FROM users WHERE user_id = ?",
+      [userId],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result[0]);
+        }
+      }
+    );
+  });
 }
 
 //gift card get function
@@ -274,8 +298,9 @@ async function getGiftCardOrder(id) {
 module.exports = {
   setUserData,
   getUsersData,
-  getUserbyID,
+  getUserById,
   getGiftCardOrders,
+  UpdatePassword,
   getGiftCardOrder,
   connection,
 };

@@ -1,5 +1,4 @@
 const { setUserData } = require("../../dbsetup");
-
 class SinUpController {
   // tạo ra bài viết mới
   create(req, res) {

@@ -1,8 +1,74 @@
 class OrderController {
   //get tất cả order rượu từ khách hàng
-  showAll(req, res) {}
+  showAll(req, res) {
+    getGiftCardOrders()
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send("An error occurred");
+      });
+  }
 
-  // get order cụ thể
-  showDetails(req, res) {}
+  // get order cụ thể theo người dùng
+  showDetails(req, res) {
+    const id = req.params.id;
+    getGiftCardOrderByOrder(id)
+      .then((order) => {
+        res.send(order);
+      })
+      .catch((error) => {
+        res.status(500).json({ error: "An error occurred" });
+      });
+  }
+
+  updateCard(req, res) {
+    const {
+      card_order_id,
+      card_id,
+      card_status_id,
+      payment_method,
+      user_id,
+      receiver_name,
+      receiver_mail,
+      receiver_phone,
+      receiver_address,
+      message,
+    } = req.body;
+    const order_id = req.params.id;
+    putCardData(
+      card_order_id,
+      card_id,
+      card_status_id,
+      payment_method,
+      user_id,
+      receiver_name,
+      receiver_mail,
+      receiver_phone,
+      receiver_address,
+      message,
+      order_id
+    )
+      .then(() => {
+        res.send("Fix order success");
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send("An error occurred");
+      });
+  }
+
+  deleteOrder(req, res) {
+    const id = req.params.id;
+    removeCardData(id)
+      .then(() => {
+        res.send("Order " + id + " deleted!");
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send("An error occurred");
+      });
+  }
 }
 module.exports = new OrderController();

@@ -5,6 +5,6 @@ const router = express.Router();
 const GiftCardUserControllerController = require("../controllers/GiftCardUserController");
 // đường dẫn gốc
 
-router.get("/", GiftCardUserControllerController.showAll);
+router.get("/", GiftCardUserControllerController.showUserOrder);
 router.post("/", GiftCardUserControllerController.create);
 module.exports = router;

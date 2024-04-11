@@ -1,6 +1,5 @@
 require("dotenv").config();
 const mysql = require("mysql2");
-let New_user_id = 1;
 
 // Database connection configuration
 const connection = mysql.createConnection({
@@ -101,7 +100,7 @@ const createTablesQuery = `
   );
 
   CREATE TABLE IF NOT EXISTS reservation_status (
-    reservation_status_id INT NOT NULL AUTO_INCREMENT,
+    reservation_status_id INT NOT NULL ,
     reservation_status TINYINT(1) DEFAULT NULL,
     PRIMARY KEY (reservation_status_id)
   );
@@ -281,26 +280,224 @@ function getUserById(userId) {
   });
 }
 
-//gift card get function
-async function getGiftCardOrders() {
-  const [rows] = await connection.query(`Select * From order_giftcard`);
-  return rows;
+// Remove Card (admin)
+function removeCardData(card_order_id) {
+  return new Promise((resolve, reject) => {
+    const query = "DELETE FROM order_giftcard WHERE card_order_id = ?";
+    const values = [card_order_id];
+    connection.query(query, values, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
 }
 
-async function getGiftCardOrder(id) {
-  const [rows] = await connection.query(
-    `Select * From order_giftcard Where user_id = ?`,
-    [id]
-  );
-  return rows[0];
+//Update giftcard (for admin usage)
+function putCardData(
+  card_order_id,
+  card_id,
+  card_status_id,
+  payment_method,
+  user_id,
+  receiver_name,
+  receiver_mail,
+  receiver_phone,
+  receiver_address,
+  message,
+  order_id
+) {
+  const query = `
+    UPDATE order_giftcard
+    SET 
+      card_order_id = ?,
+      card_id = ?,
+      card_status_id = ?,
+      payment_method = ?,
+      user_id = ?,
+      receiver_name = ?,
+      receiver_mail = ?,
+      receiver_phone = ?,
+      receiver_address = ?,
+      message = ?
+    WHERE card_order_id = ?;
+  `;
+  const values = [
+    card_order_id,
+    card_id,
+    card_status_id,
+    payment_method,
+    user_id,
+    receiver_name,
+    receiver_mail,
+    receiver_phone,
+    receiver_address,
+    message,
+    order_id,
+  ];
+
+  return new Promise((resolve, reject) => {
+    connection.query(query, values, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
 }
 
+//Get all giftcard orders(for admin usage)
+function getGiftCardOrders() {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * From order_giftcard`, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+//Get giftcard order by order id(for admin usage)
+function getGiftCardOrderByOrder(id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `Select * From order_giftcard where card_order_id = ?`,
+      id,
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
+//Get giftcard order by user id(for user usage)
+function getGiftCardOrderByUser(id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `Select * From order_giftcard where user_id = ?`,
+      id,
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
+//Create giftcard (for user usage)
+function setCardData(
+  card_id,
+  card_status_id,
+  user_id,
+  payment_method,
+  receiver_name,
+  receiver_mail,
+  receiver_phone,
+  receiver_address,
+  message
+) {
+  const query = `INSERT INTO order_giftcard (card_id, card_status_id, user_id, payment_method, receiver_name, receiver_mail, receiver_phone, receiver_address, message)
+               VALUES (?, ?, ?, ?, ?,?, ?, ?, ?)`;
+  const values = [
+    card_id,
+    card_status_id,
+    user_id,
+    payment_method,
+    receiver_name,
+    receiver_mail,
+    receiver_phone,
+    receiver_address,
+    message,
+  ];
+
+  return new Promise((resolve, reject) => {
+    connection.query(query, values, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+function updateUserData(
+  user_name,
+  user_gmail,
+  user_password,
+  user_DOB,
+  user_phone,
+  user_id,
+  user_address
+) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "UPDATE users SET user_name = ?, user_gmail = ?, user_password = ?, user_DOB = ?, user_phone = ?, user_address = ? WHERE user_id = ?",
+      [
+        user_name,
+        user_gmail,
+        user_password,
+        user_DOB,
+        user_phone,
+        user_address,
+        user_id,
+      ],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
+function deleteAcc() {
+  return new Promise((resolve, reject) => {
+    const sqlDeleteReservationQuery =
+      "DELETE FROM reservation WHERE user_id = ?;";
+    const sqlDeleteUserQuery = "DELETE FROM user WHERE user_id = ?;";
+
+    connection.query(sqlDeleteReservationQuery, user_id, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        // Reservations deleted, now delete the user
+        connection.query(sqlDeleteUserQuery, user_id, (err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        });
+      }
+    });
+  });
+}
 module.exports = {
   setUserData,
   getUsersData,
   getUserById,
-  getGiftCardOrders,
   UpdatePassword,
-  getGiftCardOrder,
+  updateUserData,
+  deleteAcc,
+  getGiftCardOrders,
+  getGiftCardOrderByUser,
+  getGiftCardOrderByOrder,
+  setCardData,
+  putCardData,
+  removeCardData,
   connection,
 };

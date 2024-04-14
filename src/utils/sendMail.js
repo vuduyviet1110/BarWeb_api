@@ -10,13 +10,13 @@ const sendMail = ({ email, subject, html }) => {
       service: "Gmail",
       auth: {
         user: process.env.EMAIL_USER, // Your email address
-        pass: process.env.EMAIL_PASS, // Your email password
+        pass: "aufu sdwc ifsh cwyq", // Your email password
       },
     });
 
     // Email message configuration
     const message = {
-      from: "ADMIN from SWI:P Speasky Bar <your_email@gmail.com>",
+      from: "SWIP Speasky Bar",
       to: email,
       subject: subject,
       html: html,

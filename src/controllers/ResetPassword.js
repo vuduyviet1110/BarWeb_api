@@ -1,36 +1,34 @@
 const sendMail = require("../utils/sendMail");
+const { getUserByEmail } = require("../../dbsetup");
 
 class ResetPasswordController {
-  // tạo ra bài viết mới
   create(req, res, next) {
-    const { user_gmail, user_name, user_password } = req.body;
-
-    sendMail({
-      email: user_gmail,
-      subject: "chuc mung ban dang ký thanh cong",
-      html: `<h1 style ='color:red'> Cảm ơn bạn đã tham gia chương trình</h1>
-      <ul>
-        <li>
-          User Name: ${user_name}
-        </li>
-        <li>
-        Password: ${user_password}
-      </li>
-      </ul>
-      `,
-    })
-      .then(() => {
-        res.send(
-          " Reseting password sucessfully. Please check your eamil to sê your user_name and password"
-        );
+    const { user_gmail } = req.body;
+    getUserByEmail(user_gmail)
+      .then((matched_user) => {
+        if (matched_user) {
+          sendMail({
+            email: user_gmail,
+            subject: "Review Your Password",
+            html: `
+              <div style="color:red">Note: You need to review your user name. We suggest that you need to change your password in order to save your account</div>
+              <ul>
+                <li>User Name: ${matched_user.user_name}</li>
+                <li>Password: ${matched_user.user_password}</li>
+              </ul>
+            `,
+          });
+          return res.send(
+            "We have sent information via your email. Please check your email to see your username and password."
+          );
+        } else {
+          res.send("No email existed");
+        }
       })
       .catch((error) => {
         console.error(error);
-        res.status(500).send("An error occurred");
+        return res.send("An error occurred");
       });
-    return res.status(201).json("Check your email");
-
-    // res.json("Reseting.....");
   }
 }
 

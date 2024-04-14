@@ -280,6 +280,22 @@ function getUserById(userId) {
   });
 }
 
+function getUserByEmail(userEmail) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "SELECT * FROM users WHERE user_gmail = ?",
+      [userEmail],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result[0]);
+        }
+      }
+    );
+  });
+}
+
 // Remove Card (admin)
 function removeCardData(card_order_id) {
   return new Promise((resolve, reject) => {
@@ -498,6 +514,7 @@ module.exports = {
   getGiftCardOrderByOrder,
   setCardData,
   putCardData,
+  getUserByEmail,
   removeCardData,
   connection,
 };

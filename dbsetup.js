@@ -502,6 +502,80 @@ function deleteAcc() {
     });
   });
 }
+
+//Booking
+function setBookingData(
+  user_id,
+  table_date,
+  table_time,
+  number_people,
+  message
+) {
+  const query = `INSERT INTO reservation (user_id, table_date, table_time, number_people, message)
+                 VALUES (?, ?, ?, ?, ?)`;
+  const values = [user_id, table_date, table_time, number_people, message];
+
+  return new Promise((resolve, reject) => {
+    connection.query(query, values, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+//get all Reservation(for admin)
+function getBookingData() {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * From reservation`, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+//edit a booking data(for admin)
+function updateBookingData(
+  user_id,
+  table_date,
+  table_time,
+  number_people,
+  message
+) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "UPDATE reservation SET table_date = ?, table_time = ?, number_people = ?, message = ? WHERE user_id = ?",
+      [user_id, table_date, table_time, number_people, message],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
+//delete reservation
+function deleteReservation() {
+  return new Promise((resolve, reject) => {
+    const sqlDeleteReservationQuery =
+      "DELETE FROM reservation WHERE user_id = ?;";
+    connection.query(sqlDeleteReservationQuery, user_id, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
 module.exports = {
   setUserData,
   getUsersData,
@@ -516,5 +590,9 @@ module.exports = {
   putCardData,
   getUserByEmail,
   removeCardData,
+  setBookingData,
+  getBookingData,
+  updateBookingData,
+  deleteReservation,
   connection,
 };

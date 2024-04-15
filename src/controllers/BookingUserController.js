@@ -1,24 +1,23 @@
+const { setBookingData } = require("../../dbsetup");
+
 class ReservationUserController {
   // tạo ra bài viết mới
   create(req, res, next) {
     // lấy body từ form của client gửi lên
-    const { id, people, email, time, message, phone, date } = req.body;
-    // console.log(req.body);
-    // //lấy giá trị body đó truyền vào hàm setUserData đã define trước đó
-    // setUserData(name, gmail, password, DOB, phone)
-    //   .then((newUser) => {
-    //     // newUser là  kết quả xử lý của hàm setUserData
-    //     if (newUser) {
-    //       res.json(newUser);
-    //     } else {
-    //       res.send("Incorrect User ID!");
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     console.error(err);
-    //     res.status(500).send("Internal Server Error");
-    //   });
-    res.json("nhận được phản hồi");
+    const { user_id, table_date, table_time, number_people, message } =
+      req.body;
+    setBookingData(user_id, table_date, table_time, number_people, message)
+      .then((newReservation) => {
+        if (newReservation) {
+          res.json(newReservation);
+        } else {
+          res.send("Something broken!");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send("Internal Server Error");
+      });
   }
 }
 

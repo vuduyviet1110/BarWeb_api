@@ -6,5 +6,6 @@ const giftCardController = require("../controllers/GiftCardController");
 // đường dẫn gốc
 router.get("/", giftCardController.showAll);
 router.get("/:id", giftCardController.showDetails);
+router.put("/", giftCardController.updateCard);
 
 module.exports = router;

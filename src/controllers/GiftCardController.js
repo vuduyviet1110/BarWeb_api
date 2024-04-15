@@ -1,3 +1,5 @@
+const { getGiftCardOrders } = require("../../dbsetup");
+
 class OrderController {
   //get tất cả order rượu từ khách hàng
   showAll(req, res) {
@@ -36,7 +38,6 @@ class OrderController {
       receiver_address,
       message,
     } = req.body;
-    const order_id = req.params.id;
     putCardData(
       card_order_id,
       card_id,

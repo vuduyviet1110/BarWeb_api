@@ -1,4 +1,9 @@
-const { getBookingData } = require("../../dbsetup");
+const {
+  getBookingData,
+  deleteReservation,
+  updateBookingData,
+  setBookingData,
+} = require("../../dbsetup");
 
 class BookingController {
   // hiển thị bài viết
@@ -14,15 +19,34 @@ class BookingController {
   }
 
   // tạo ra bài viết mới
-  create(req, res, next) {}
+  create(req, res, next) {
+    const { user_id, table_date, table_time, number_people, message } =
+      req.body.newReservation;
+    console.log(user_id, table_date, table_time, number_people);
+    setBookingData(user_id, table_date, table_time, number_people, message)
+      .then((data) => {
+        res.send("insert success on reservation of user:");
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).json({ error: "An error occurred" });
+      });
+  }
 
   edit(req, res, next) {
-    const { user_id, table_date, table_time, number_people, message } =
-      req.body;
-
-    updateBookingData(user_id, table_date, table_time, number_people, message)
-      .then(() => {
-        res.send(`Update success on reservation of user:  ${user_id}`);
+    const { reservation_id, table_date, table_time, number_people, message } =
+      req.body.MatchedReservation;
+    console.log(table_date, table_time, number_people, message);
+    updateBookingData(
+      reservation_id,
+      table_date,
+      table_time,
+      number_people,
+      message
+    )
+      .then((data) => {
+        res.send(`Update success on reservation of user:  ${reservation_id}`);
+        console.log(data);
       })
       .catch((error) => {
         console.error(error);
@@ -32,10 +56,10 @@ class BookingController {
 
   // xóa bài viết (soft delete)
   delete(req, res, next) {
-    const user_id = req.params.id;
-    deleteReservation(user_id)
+    const { reservation_id } = req.body;
+    deleteReservation(reservation_id)
       .then((data) => {
-        res.send(`delete Reservation with the user id ${user_id} successfully`);
+        res.send(`Deleted: ${reservation_id}`);
       })
       .catch((error) => {
         res.status(500).json({ error: "An error occurred" });

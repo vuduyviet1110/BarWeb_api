@@ -7,5 +7,5 @@ const giftCardController = require("../controllers/GiftCardController");
 router.get("/", giftCardController.showAll);
 router.get("/:id", giftCardController.showDetails);
 router.put("/", giftCardController.updateCard);
-
+router.delete("/", giftCardController.deleteOrder);
 module.exports = router;

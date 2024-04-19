@@ -1,23 +1,33 @@
-const { setUserData } = require("../../dbsetup");
+const { setUserData, EmailExisted } = require("../../dbsetup");
 class SinUpController {
   // tạo ra bài viết mới
   create(req, res) {
     // lấy body từ form của client gửi lên
     const { name, gmail, password, DOB, phone } = req.body;
-    console.log(req.body);
     //lấy giá trị body đó truyền vào hàm setUserData đã define trước đó
-    setUserData(name, gmail, password, DOB, phone)
-      .then((newUser) => {
-        // newUser là  kết quả xử lý của hàm setUserData
-        if (newUser) {
-          res.json(newUser);
+    EmailExisted(gmail)
+      .then((existedEmail) => {
+        if (existedEmail.length > 0) {
+          // Nếu email đã tồn tại, trả về thông báo lỗi
+          res.send("existed email");
         } else {
-          res.send("Incorrect User ID!");
+          // Nếu email chưa tồn tại, tiến hành tạo mới người dùng
+          setUserData(name, gmail, password, DOB, phone)
+            .then((newUser) => {
+              // Nếu tạo mới người dùng thành công, trả về thông tin người dùng
+              res.json(newUser);
+            })
+            .catch((err) => {
+              // Xử lý lỗi nếu có
+              console.error(err);
+              res.status(500).send("Internal Error");
+            });
         }
       })
       .catch((err) => {
+        // Xử lý lỗi nếu có
         console.error(err);
-        res.status(500).send("Internal Server Error");
+        res.status(500).send("Internal Error");
       });
   }
 }

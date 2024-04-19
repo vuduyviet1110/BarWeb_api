@@ -313,7 +313,6 @@ function removeCardData(card_order_id) {
 
 //Update giftcard (for admin usage)
 function putCardData(
-  card_order_id,
   card_id,
   card_status_id,
   payment_method,
@@ -323,12 +322,11 @@ function putCardData(
   receiver_phone,
   receiver_address,
   message,
-  order_id
+  card_order_id
 ) {
   const query = `
     UPDATE order_giftcard
     SET 
-      card_order_id = ?,
       card_id = ?,
       card_status_id = ?,
       payment_method = ?,
@@ -341,7 +339,6 @@ function putCardData(
     WHERE card_order_id = ?;
   `;
   const values = [
-    card_order_id,
     card_id,
     card_status_id,
     payment_method,
@@ -351,7 +348,7 @@ function putCardData(
     receiver_phone,
     receiver_address,
     message,
-    order_id,
+    card_order_id,
   ];
 
   return new Promise((resolve, reject) => {
@@ -479,23 +476,29 @@ function updateUserData(
     );
   });
 }
-
-function deleteAcc() {
+function deleteAcc(user_id) {
   return new Promise((resolve, reject) => {
+    const sqlDeleteGiftCardQuery =
+      "DELETE FROM order_giftcard WHERE user_id = ?;";
     const sqlDeleteReservationQuery =
       "DELETE FROM reservation WHERE user_id = ?;";
-    const sqlDeleteUserQuery = "DELETE FROM user WHERE user_id = ?;";
+    const sqlDeleteUserQuery = "DELETE FROM users WHERE user_id = ?;";
 
-    connection.query(sqlDeleteReservationQuery, user_id, (err, result) => {
+    connection.query(sqlDeleteGiftCardQuery, user_id, (err, result) => {
       if (err) {
         reject(err);
       } else {
-        // Reservations deleted, now delete the user
-        connection.query(sqlDeleteUserQuery, user_id, (err, result) => {
+        connection.query(sqlDeleteReservationQuery, user_id, (err, result) => {
           if (err) {
             reject(err);
           } else {
-            resolve(result);
+            connection.query(sqlDeleteUserQuery, user_id, (err, result) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            });
           }
         });
       }
@@ -529,19 +532,25 @@ function setBookingData(
 //get all Reservation(for admin)
 function getBookingData() {
   return new Promise((resolve, reject) => {
-    connection.query(`Select * From reservation`, (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
+    connection.query(
+      `SELECT r.*, u.user_name, u.user_phone, u.user_gmail
+    FROM reservation AS r
+    JOIN users AS u ON r.user_id = u.user_id`,
+      (err, result) => {
+        if (err) {
+          reject(err);
+          console.log(err);
+        } else {
+          resolve(result);
+        }
       }
-    });
+    );
   });
 }
 
 //edit a booking data(for admin)
 function updateBookingData(
-  user_id,
+  reservation_id,
   table_date,
   table_time,
   number_people,
@@ -549,8 +558,8 @@ function updateBookingData(
 ) {
   return new Promise((resolve, reject) => {
     connection.query(
-      "UPDATE reservation SET table_date = ?, table_time = ?, number_people = ?, message = ? WHERE user_id = ?",
-      [user_id, table_date, table_time, number_people, message],
+      "UPDATE reservation SET table_date = ?, table_time = ?, number_people = ?, message = ? WHERE reservation_id = ?",
+      [table_date, table_time, number_people, message, reservation_id],
       (err, result) => {
         if (err) {
           reject(err);
@@ -563,19 +572,39 @@ function updateBookingData(
 }
 
 //delete reservation
-function deleteReservation() {
+function deleteReservation(reservation_id) {
   return new Promise((resolve, reject) => {
     const sqlDeleteReservationQuery =
-      "DELETE FROM reservation WHERE user_id = ?;";
-    connection.query(sqlDeleteReservationQuery, user_id, (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
+      "DELETE FROM reservation WHERE reservation_id = ?";
+    connection.query(
+      sqlDeleteReservationQuery,
+      reservation_id,
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
       }
-    });
+    );
   });
 }
+function EmailExisted(user_email) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "SELECT * FROM users WHERE user_gmail = ? ",
+      [user_email],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
 module.exports = {
   setUserData,
   getUsersData,
@@ -583,6 +612,7 @@ module.exports = {
   UpdatePassword,
   updateUserData,
   deleteAcc,
+  EmailExisted,
   getGiftCardOrders,
   getGiftCardOrderByUser,
   getGiftCardOrderByOrder,

@@ -1,4 +1,8 @@
-const { getGiftCardOrders } = require("../../dbsetup");
+const {
+  getGiftCardOrders,
+  removeCardData,
+  putCardData,
+} = require("../../dbsetup");
 
 class OrderController {
   //get tất cả order rượu từ khách hàng
@@ -27,7 +31,6 @@ class OrderController {
 
   updateCard(req, res) {
     const {
-      card_order_id,
       card_id,
       card_status_id,
       payment_method,
@@ -37,9 +40,19 @@ class OrderController {
       receiver_phone,
       receiver_address,
       message,
-    } = req.body;
+      card_order_id,
+    } = req.body.MatchedGiftCard;
+    console.log(
+      card_id,
+      card_status_id,
+      payment_method,
+      user_id,
+      receiver_name,
+      receiver_mail,
+      receiver_phone,
+      receiver_address
+    );
     putCardData(
-      card_order_id,
       card_id,
       card_status_id,
       payment_method,
@@ -49,7 +62,7 @@ class OrderController {
       receiver_phone,
       receiver_address,
       message,
-      order_id
+      card_order_id
     )
       .then(() => {
         res.send("Fix order success");
@@ -61,10 +74,10 @@ class OrderController {
   }
 
   deleteOrder(req, res) {
-    const id = req.params.id;
-    removeCardData(id)
+    const { giftCardId } = req.body;
+    removeCardData(giftCardId)
       .then(() => {
-        res.send("Order " + id + " deleted!");
+        res.send("Order " + giftCardId + " deleted!");
       })
       .catch((error) => {
         console.error(error);

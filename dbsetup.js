@@ -512,11 +512,23 @@ function setBookingData(
   table_date,
   table_time,
   number_people,
+  user_gmail,
+  user_phone,
+  user_name,
   message
 ) {
-  const query = `INSERT INTO reservation (user_id, table_date, table_time, number_people, message)
-                 VALUES (?, ?, ?, ?, ?)`;
-  const values = [user_id, table_date, table_time, number_people, message];
+  const query = `INSERT INTO reservation (user_id, table_date, table_time, number_people, user_gmail, user_phone, user_name, message)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const values = [
+    user_id,
+    table_date,
+    table_time,
+    number_people,
+    user_gmail,
+    user_phone,
+    user_name,
+    message,
+  ];
 
   return new Promise((resolve, reject) => {
     connection.query(query, values, (error, result) => {
@@ -604,7 +616,66 @@ function EmailExisted(user_email) {
     );
   });
 }
+function setBookingDataNoAcc(
+  guest_id,
+  table_date,
+  table_time,
+  number_people,
+  message
+) {
+  const query = `INSERT INTO reservation (guest_id, table_date, table_time, number_people, message)
+                 VALUES (?, ?, ?, ?, ?)`;
+  const values = [guest_id, table_date, table_time, number_people, message];
+  console.log(values);
+  return new Promise((resolve, reject) => {
+    connection.query(query, values, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+function setUserNoAccData(user_name, user_email, user_phone) {
+  return new Promise((resolve, reject) => {
+    const sqlInsertQuery = `
+      INSERT INTO users_noacc (user_name, user_gmail, user_phone)
+      VALUES (?, ?, ?);
+    `;
 
+    connection.query(
+      sqlInsertQuery,
+      [user_name, user_email, user_phone],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          // Kết quả trả về sau khi chèn dữ liệu mới
+          console.log("Inserted record ID:", result.insertId);
+          console.log("new user id: ", result.insertId);
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+function getUserNoAccByMail(userEmail) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "SELECT guest_id FROM users_noacc WHERE user_gmail = ?",
+      [userEmail],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result); // Resolve with guest_id value
+          console.log(result);
+        }
+      }
+    );
+  });
+}
 module.exports = {
   setUserData,
   getUsersData,
@@ -624,5 +695,8 @@ module.exports = {
   getBookingData,
   updateBookingData,
   deleteReservation,
+  setUserNoAccData,
+  setBookingDataNoAcc,
+  getUserNoAccByMail,
   connection,
 };

@@ -2,77 +2,68 @@ const {
   setBookingData,
   setUserNoAccData,
   getUserNoAccByMail,
+  EmailExisted,
+  getUserByEmail,
 } = require("../../dbsetup");
 
 class ReservationUserController {
   // tạo ra bài viết mới
   create(req, res, next) {
-    // lấy body từ form của client gửi lên
-    const {
-      user_id,
-      table_date,
-      table_time,
-      number_people,
-      message,
-      user_name,
-      user_phone,
-      user_gmail,
-    } = req.body;
-    const date = table_date.split("T")[0];
-    if (user_id != 0) {
-      setBookingData(
-        user_id,
-        table_date,
-        table_time,
-        number_people,
-        user_gmail,
-        user_phone,
-        user_name,
-        message
-      )
-        .then((newReservation) => {
-          if (newReservation) {
-            res.json(newReservation);
-          } else {
-            res.send("Something broken!");
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          res.status(500).send("Internal Server Error");
-        });
-    } else {
-      let guest_id; // Declare the guest_id variable outside the promise chain
-      setUserNoAccData(user_name, user_email, user_phone)
-        .then(() => getUserNoAccByMail(user_email))
-        .then((result) => {
-          console.log(result);
-          guest_id = result; // Assign the resolved value to guest_id
-          const { table_date, table_time, number_people, message } = req.body;
-          return setBookingData(
+    return new Promise(async (resolve, reject) => {
+      try {
+        const {
+          user_name,
+          user_gmail,
+          user_phone,
+          table_date,
+          table_time,
+          number_people,
+          message,
+        } = req.body;
+        const date = table_date.split("T")[0];
+        let guest_id;
+
+        if (EmailExisted(user_gmail) == null) {
+          await setUserNoAccData(user_name, user_gmail, user_phone);
+          const guests = await getUserNoAccByMail(user_gmail);
+          guest_id = guests[0]?.guest_id;
+          user_id = 1;
+          setBookingData(
             user_id,
-            table_date,
+            date,
             table_time,
             number_people,
-            user_email,
-            user_phone,
-            user_name,
             message,
             guest_id
           );
-        })
-        .then((newReservation) => {
-          if (newReservation) {
-            res.json(newReservation);
-          } else {
-            res.send("Something broken!");
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          res.status(500).send("Internal Server Error");
-        });
-    }
+        } else {
+          guest_id = 1;
+          const user = await getUserByEmail(user_gmail);
+          const user_id = user; // Assign the correct value received from getUserByEmail
+          setBookingData(
+            user_id,
+            date,
+            table_time,
+            number_people,
+            message,
+            guest_id
+          );
+        }
+
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    })
+      .then(() => {
+        res.status(200).json({ message: "Booking created successfully" });
+      })
+      .catch((error) => {
+        console.error("Error creating booking:", error);
+        res
+          .status(500)
+          .json({ error: "An error occurred while creating the booking" });
+      });
   }
 }
 

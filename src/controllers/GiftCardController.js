@@ -2,6 +2,9 @@ const {
   getGiftCardOrders,
   removeCardData,
   putCardData,
+  setCardData,
+  getUserByEmail,
+  getUserById,
 } = require("../../dbsetup");
 
 class OrderController {
@@ -31,37 +34,26 @@ class OrderController {
 
   updateCard(req, res) {
     const {
-      card_id,
       card_status_id,
-      payment_method,
       user_id,
       receiver_name,
       receiver_mail,
       receiver_phone,
       receiver_address,
       message,
+      user_amount,
       card_order_id,
     } = req.body.MatchedGiftCard;
-    console.log(
-      card_id,
-      card_status_id,
-      payment_method,
-      user_id,
-      receiver_name,
-      receiver_mail,
-      receiver_phone,
-      receiver_address
-    );
+
     putCardData(
-      card_id,
       card_status_id,
-      payment_method,
       user_id,
       receiver_name,
       receiver_mail,
       receiver_phone,
       receiver_address,
       message,
+      user_amount,
       card_order_id
     )
       .then(() => {
@@ -83,6 +75,47 @@ class OrderController {
         console.error(error);
         res.status(500).send("An error occurred");
       });
+  }
+  async create(req, res) {
+    try {
+      const {
+        user_amount,
+        user_gmail,
+        receiver_name,
+        receiver_mail,
+        receiver_phone,
+        receiver_address,
+        receiver_message,
+      } = req.body.newGiftCardOrder;
+
+      const card_status_id = 2;
+
+      const existedUser = await getUserByEmail(user_gmail);
+      if (existedUser?.user_id)
+        setCardData(
+          card_status_id,
+          existedUser.user_id,
+          receiver_name,
+          receiver_mail,
+          receiver_phone,
+          receiver_address,
+          receiver_message,
+          user_amount
+        )
+          .then(() => {
+            res.send("Order success");
+          })
+          .catch((error) => {
+            console.error(error);
+            res.status(500).send("An error occurred");
+          });
+      else {
+        res.send("existed Acc?");
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("An error occurred");
+    }
   }
 }
 module.exports = new OrderController();

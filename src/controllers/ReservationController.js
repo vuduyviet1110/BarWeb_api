@@ -3,6 +3,10 @@ const {
   deleteReservation,
   updateBookingData,
   setBookingData,
+  getUserByEmail,
+  getUserNoAccByMail,
+  EmailExisted,
+  setUserNoAccData,
 } = require("../../dbsetup");
 
 class BookingController {
@@ -19,17 +23,62 @@ class BookingController {
   }
 
   // tạo ra bài viết mới
-  create(req, res, next) {
-    const { user_id, table_date, table_time, number_people, message } =
-      req.body.newReservation;
-    console.log(user_id, table_date, table_time, number_people);
-    setBookingData(user_id, table_date, table_time, number_people, message)
-      .then((data) => {
-        res.send("insert success on reservation of user:");
+  async create(req, res, next) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const {
+          user_name,
+          user_gmail,
+          user_phone,
+          table_date,
+          table_time,
+          number_people,
+          message,
+        } = req.body.newReservation;
+        let guest_id;
+
+        const noteExistedEmail = await EmailExisted(user_gmail);
+        if (noteExistedEmail === 0) {
+          console.log("chưa tồn tại");
+          await setUserNoAccData(user_name, user_gmail, user_phone);
+          const guests = await getUserNoAccByMail(user_gmail);
+          guest_id = guests[0]?.guest_id;
+          setBookingData(
+            1,
+            table_date,
+            table_time,
+            number_people,
+            message,
+            guest_id
+          );
+        } else {
+          guest_id = 1;
+          console.log("đã tồn tại");
+          const user = await getUserByEmail(user_gmail);
+          const user_id = user.user_id; // Assign the correct value received from getUserByEmail
+          setBookingData(
+            user_id,
+            table_date,
+            table_time,
+            number_people,
+            message,
+            guest_id
+          );
+        }
+
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    })
+      .then(() => {
+        res.status(200).json({ message: "Booking created successfully" });
       })
       .catch((error) => {
-        console.error(error);
-        res.status(500).json({ error: "An error occurred" });
+        console.error("Error creating booking:", error);
+        res
+          .status(500)
+          .json({ error: "An error occurred while creating the booking" });
       });
   }
 

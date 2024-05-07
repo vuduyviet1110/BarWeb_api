@@ -3,8 +3,8 @@ const jwt = require("jsonwebtoken");
 class SinInController {
   // tạo ra bài viết mới
   Auth(req, res, next) {
-    let gmail = req.body.email;
-    let password = req.body.password;
+    let gmail = req.body.user_gmail;
+    let password = req.body.user_password;
 
     if (gmail && password) {
       connection.query(

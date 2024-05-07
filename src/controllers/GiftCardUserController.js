@@ -27,34 +27,16 @@ class GiftCardUserController {
       } = req.body;
 
       const card_status_id = 2;
-      const payment_method = "Credit card";
-      var card_id;
-
-      if (user_amount == "10") {
-        card_id = 1;
-      }
-
-      if (user_amount == "20") {
-        card_id = 2;
-      }
-
-      if (user_amount == "50") {
-        card_id = 3;
-      }
-      if (user_amount == "100") {
-        card_id = 4;
-      }
 
       setCardData(
-        card_id,
         card_status_id,
         user_id,
-        payment_method,
         receiver_name,
         receiver_mail,
         receiver_phone,
         receiver_address,
-        receiver_message
+        receiver_message,
+        user_amount
       )
         .then(() => {
           res.send("Order success");

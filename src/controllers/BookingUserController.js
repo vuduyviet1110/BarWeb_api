@@ -23,23 +23,19 @@ class ReservationUserController {
         const date = table_date.split("T")[0];
         let guest_id;
 
-        if (EmailExisted(user_gmail) == null) {
+        const noteExistedEmail = await EmailExisted(user_gmail);
+        console.log(noteExistedEmail);
+        if (noteExistedEmail === 0) {
+          console.log("chưa tồn tại");
           await setUserNoAccData(user_name, user_gmail, user_phone);
           const guests = await getUserNoAccByMail(user_gmail);
           guest_id = guests[0]?.guest_id;
-          user_id = 1;
-          setBookingData(
-            user_id,
-            date,
-            table_time,
-            number_people,
-            message,
-            guest_id
-          );
+          setBookingData(1, date, table_time, number_people, message, guest_id);
         } else {
           guest_id = 1;
+          console.log("đã tồn tại");
           const user = await getUserByEmail(user_gmail);
-          const user_id = user; // Assign the correct value received from getUserByEmail
+          const user_id = user.user_id; // Assign the correct value received from getUserByEmail
           setBookingData(
             user_id,
             date,

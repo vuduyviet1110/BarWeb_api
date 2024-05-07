@@ -313,41 +313,38 @@ function removeCardData(card_order_id) {
 
 //Update giftcard (for admin usage)
 function putCardData(
-  card_id,
   card_status_id,
-  payment_method,
   user_id,
   receiver_name,
   receiver_mail,
   receiver_phone,
   receiver_address,
   message,
+  user_amount,
   card_order_id
 ) {
   const query = `
     UPDATE order_giftcard
     SET 
-      card_id = ?,
       card_status_id = ?,
-      payment_method = ?,
       user_id = ?,
       receiver_name = ?,
       receiver_mail = ?,
       receiver_phone = ?,
       receiver_address = ?,
-      message = ?
+      message = ?, 
+      user_amount = ?
     WHERE card_order_id = ?;
   `;
   const values = [
-    card_id,
     card_status_id,
-    payment_method,
     user_id,
     receiver_name,
     receiver_mail,
     receiver_phone,
     receiver_address,
     message,
+    user_amount,
     card_order_id,
   ];
 
@@ -365,7 +362,13 @@ function putCardData(
 //Get all giftcard orders(for admin usage)
 function getGiftCardOrders() {
   return new Promise((resolve, reject) => {
-    connection.query(`Select * From order_giftcard`, (err, result) => {
+    const query = `
+      SELECT r.*, u.user_name, u.user_phone, u.user_gmail
+      FROM order_giftcard AS r
+      JOIN users AS u ON r.user_id = u.user_id
+    `;
+
+    connection.query(query, (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -411,28 +414,26 @@ function getGiftCardOrderByUser(id) {
 
 //Create giftcard (for user usage)
 function setCardData(
-  card_id,
   card_status_id,
   user_id,
-  payment_method,
   receiver_name,
   receiver_mail,
   receiver_phone,
   receiver_address,
-  message
+  message,
+  user_amount
 ) {
-  const query = `INSERT INTO order_giftcard (card_id, card_status_id, user_id, payment_method, receiver_name, receiver_mail, receiver_phone, receiver_address, message)
-               VALUES (?, ?, ?, ?, ?,?, ?, ?, ?)`;
+  const query = `INSERT INTO order_giftcard (card_status_id, user_id, receiver_name, receiver_mail, receiver_phone, receiver_address, message,user_amount)
+               VALUES (?, ?, ?, ?,?, ?, ?, ?)`;
   const values = [
-    card_id,
     card_status_id,
     user_id,
-    payment_method,
     receiver_name,
     receiver_mail,
     receiver_phone,
     receiver_address,
     message,
+    user_amount,
   ];
 
   return new Promise((resolve, reject) => {
@@ -512,22 +513,18 @@ function setBookingData(
   table_date,
   table_time,
   number_people,
-  user_gmail,
-  user_phone,
-  user_name,
-  message
+  message,
+  guest_id
 ) {
-  const query = `INSERT INTO reservation (user_id, table_date, table_time, number_people, user_gmail, user_phone, user_name, message)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const query = `INSERT INTO reservation (user_id, table_date, table_time, number_people, message, guest_id)
+                 VALUES (?, ?, ?, ?, ?,?)`;
   const values = [
     user_id,
     table_date,
     table_time,
     number_people,
-    user_gmail,
-    user_phone,
-    user_name,
     message,
+    guest_id,
   ];
 
   return new Promise((resolve, reject) => {
@@ -610,7 +607,8 @@ function EmailExisted(user_email) {
         if (err) {
           reject(err);
         } else {
-          resolve(result);
+          resolve(result.length);
+          console.log("Email Existed: " + result.length);
         }
       }
     );
@@ -640,7 +638,7 @@ function setBookingDataNoAcc(
 function setUserNoAccData(user_name, user_email, user_phone) {
   return new Promise((resolve, reject) => {
     const sqlInsertQuery = `
-      INSERT INTO users_noacc (user_name, user_gmail, user_phone)
+      INSERT INTO users_noacc (guest_name, guest_gmail, guest_phone)
       VALUES (?, ?, ?);
     `;
 
@@ -663,7 +661,7 @@ function setUserNoAccData(user_name, user_email, user_phone) {
 function getUserNoAccByMail(userEmail) {
   return new Promise((resolve, reject) => {
     connection.query(
-      "SELECT guest_id FROM users_noacc WHERE user_gmail = ?",
+      "SELECT guest_id FROM users_noacc WHERE guest_gmail = ?",
       [userEmail],
       (err, result) => {
         if (err) {

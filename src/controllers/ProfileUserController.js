@@ -21,7 +21,6 @@ class ProfileUserController {
       user_DOB,
       user_phone,
       user_id,
-      user_address,
     } = req.body;
 
     updateUserData(
@@ -30,8 +29,7 @@ class ProfileUserController {
       user_password,
       user_DOB,
       user_phone,
-      user_id,
-      user_address
+      user_id
     )
       .then(() => {
         res.send(`Update success on user ${user_id}`);

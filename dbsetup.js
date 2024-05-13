@@ -128,16 +128,16 @@ const createTablesQuery = `
   );
 
   CREATE TABLE IF NOT EXISTS title (
-    content_id INT NOT NULL AUTO_INCREMENT,
-    upload_time TIMESTAMP NULL DEFAULT NULL,
+    upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     admin_id INT DEFAULT NULL,
     content VARCHAR(1000) DEFAULT NULL,
-    title VARCHAR(2000) DEFAULT NULL,
-    PRIMARY KEY (content_id),
-    KEY admin_id (admin_id),
-    CONSTRAINT title_ibfk_1 FOREIGN KEY (content_id) REFERENCES content (content_id),
-    CONSTRAINT title_ibfk_2 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
+    title_id INT AUTO_INCREMENT PRIMARY KEY,
+    image VARCHAR(2000) NOT NULL, 
+    title VARCHAR(2000)  NOT NULL,
+    FOREIGN KEY (admin_id) REFERENCES admin(admin_id) 
   );
+  
+  
 `;
 
 // const initDataQuery = `
@@ -452,21 +452,12 @@ function updateUserData(
   user_password,
   user_DOB,
   user_phone,
-  user_id,
-  user_address
+  user_id
 ) {
   return new Promise((resolve, reject) => {
     connection.query(
-      "UPDATE users SET user_name = ?, user_gmail = ?, user_password = ?, user_DOB = ?, user_phone = ?, user_address = ? WHERE user_id = ?",
-      [
-        user_name,
-        user_gmail,
-        user_password,
-        user_DOB,
-        user_phone,
-        user_address,
-        user_id,
-      ],
+      "UPDATE users SET user_name = ?, user_gmail = ?, user_password = ?, user_DOB = ?, user_phone = ? WHERE user_id = ?",
+      [user_name, user_gmail, user_password, user_DOB, user_phone, user_id],
       (err, result) => {
         if (err) {
           reject(err);
@@ -674,6 +665,37 @@ function getUserNoAccByMail(userEmail) {
     );
   });
 }
+function ModifyTitleContent(admin_id, content, title, image) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE title
+      SET admin_id = ?, content = ?, title = ?, image = ?
+      WHERE title_id = 1`,
+      [admin_id, content, title, image],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+          console.log(result);
+        }
+      }
+    );
+  });
+}
+function getTitleContent() {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * from title`, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+        console.log(result);
+      }
+    });
+  });
+}
+
 module.exports = {
   setUserData,
   getUsersData,
@@ -696,5 +718,7 @@ module.exports = {
   setUserNoAccData,
   setBookingDataNoAcc,
   getUserNoAccByMail,
+  ModifyTitleContent,
+  getTitleContent,
   connection,
 };

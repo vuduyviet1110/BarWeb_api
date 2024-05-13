@@ -3,10 +3,9 @@ const express = require("express");
 const router = express.Router();
 
 const ContentController = require("../controllers/ContentController");
+const uploadCloud = require("../config/cloudinary.config");
 // đường dẫn gốc
 
 router.get("/", ContentController.show);
-router.put("/:id", ContentController.edit);
-router.post("/:id", ContentController.create);
-router.delete("/:id", ContentController.delete);
+router.put("/", uploadCloud.single("image"), ContentController.create);
 module.exports = router;

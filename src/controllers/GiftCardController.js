@@ -85,7 +85,7 @@ class OrderController {
         receiver_mail,
         receiver_phone,
         receiver_address,
-        receiver_message,
+        message,
       } = req.body.newGiftCardOrder;
 
       const card_status_id = 2;
@@ -99,7 +99,7 @@ class OrderController {
           receiver_mail,
           receiver_phone,
           receiver_address,
-          receiver_message,
+          message,
           user_amount
         )
           .then(() => {

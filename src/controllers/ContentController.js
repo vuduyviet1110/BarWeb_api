@@ -1,11 +1,25 @@
-const { ModifyTitleContent, getTitleContent } = require("../../dbsetup");
+const {
+  ModifyTitleContent,
+  getTitleContent,
+  getOurStory,
+  ModifyOurStory,
+} = require("../../dbsetup");
 
 class ContentController {
-  // hiển thị bài viết
-  async show(req, res, next) {
+  // hiển thị title
+  async showTitle(req, res, next) {
     try {
       const result = await getTitleContent();
-      console.log("đang lấy dữ liệu...");
+      return res.status(200).json(result);
+    } catch (error) {
+      console.log("error: ", error);
+      return res.status(500).json("something wrong");
+    }
+  }
+  // hiển thị ourstory
+  async showOurstory(req, res, next) {
+    try {
+      const result = await getOurStory();
       return res.status(200).json(result);
     } catch (error) {
       console.log("error: ", error);
@@ -13,30 +27,19 @@ class ContentController {
     }
   }
 
-  // tạo ra bài viết mới
-  async create(req, res) {
+  // edit title trong phần content
+  async editTitle(req, res) {
     try {
-      const { title, content, image } = req.body;
+      const { title, content, image, ad_id } = req.body;
       const fileData = req.file;
-      console.log(
-        "file:",
-        fileData,
-        " title: ",
-        title,
-        " content: ",
-        content,
-        " image: ",
-        image
-      );
       const getAllTitleContent = await getTitleContent();
       const currentImg = getAllTitleContent[0].image;
-      console.log("currentImg:", currentImg);
       if (title && content && (fileData || image)) {
         if (currentImg === image) {
           res.send("same image");
-          await ModifyTitleContent(1, content, title, image);
+          await ModifyTitleContent(ad_id, content, title, image);
         } else {
-          await ModifyTitleContent(1, content, title, fileData.path);
+          await ModifyTitleContent(ad_id, content, title, fileData.path);
           // console.log("file: ", fileData?.path, "image: ", image);
           return res.status(200).json({ file: fileData?.path });
         }
@@ -48,11 +51,36 @@ class ContentController {
     }
   }
 
-  // edit bài viết
-  edit(req, res, next) {}
+  // edit our story trong phần content
+  async editOurStory(req, res, next) {
+    try {
+      const { title, content, storyBgImage, storySlideImage } = req.body;
+      const bgImage = req.files.storyBgImage ? req.files.storyBgImage[0] : null;
+      const slideImage = req.files.storySlideImage
+        ? req.files.storySlideImage[0]
+        : null;
 
-  // xóa bài viết (soft delete)
-  delete(req, res, next) {}
+      if (
+        title &&
+        content &&
+        (bgImage || storyBgImage) &&
+        (slideImage || storySlideImage)
+      ) {
+        await ModifyOurStory(
+          1,
+          title,
+          content,
+          bgImage?.path || storyBgImage,
+          slideImage?.path || storySlideImage
+        );
+        res.send("dbs updated!");
+      } else {
+        res.send("complete all the fields");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 module.exports = new ContentController();

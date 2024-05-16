@@ -6,6 +6,15 @@ const ContentController = require("../controllers/ContentController");
 const uploadCloud = require("../config/cloudinary.config");
 // đường dẫn gốc
 
-router.get("/", ContentController.show);
-router.put("/", uploadCloud.single("image"), ContentController.create);
+router.get("/title", ContentController.showTitle);
+router.get("/ourstory", ContentController.showOurstory);
+router.put("/title", uploadCloud.single("image"), ContentController.editTitle);
+router.put(
+  "/ourstory",
+  uploadCloud.fields([
+    { name: "storyBgImage", maxCount: 1 },
+    { name: "storySlideImage", maxCount: 1 },
+  ]),
+  ContentController.editOurStory
+);
 module.exports = router;

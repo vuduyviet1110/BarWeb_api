@@ -88,15 +88,14 @@ const createTablesQuery = `
   );
 
   CREATE TABLE IF NOT EXISTS our_story (
-    content_id INT NOT NULL AUTO_INCREMENT,
-    upload_time TIMESTAMP NULL DEFAULT NULL,
+    ourstory_id INT AUTO_INCREMENT PRIMARY KEY,
+    upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     admin_id INT DEFAULT NULL,
-    content VARCHAR(5000) DEFAULT NULL,
-    title VARCHAR(2000) DEFAULT NULL,
-    PRIMARY KEY (content_id),
-    KEY admin_id (admin_id),
-    CONSTRAINT our_story_ibfk_1 FOREIGN KEY (content_id) REFERENCES content (content_id),
-    CONSTRAINT our_story_ibfk_2 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
+    content VARCHAR(1000) DEFAULT NULL,
+    title VARCHAR(2000)  NOT NULL,
+    bgimage VARCHAR(2000) NOT NULL, 
+    slideimage VARCHAR(2000) NOT NULL, 
+    FOREIGN KEY (admin_id) REFERENCES admin(admin_id) 
   );
 
   CREATE TABLE IF NOT EXISTS reservation_status (
@@ -109,6 +108,11 @@ const createTablesQuery = `
     table_id INT NOT NULL AUTO_INCREMENT,
     table_number INT DEFAULT NULL,
     PRIMARY KEY (table_id)
+  );
+  CREATE TABLE IF NOT EXISTS gallery (
+    img_id INT NOT NULL AUTO_INCREMENT,
+    img varchar(1000) NOT NULL,
+    PRIMARY KEY (img_id)
   );
   CREATE TABLE IF NOT EXISTS reservation (
     reservation_id INT NOT NULL AUTO_INCREMENT,
@@ -529,13 +533,58 @@ function setBookingData(
   });
 }
 
+function getOnlyResData() {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM reservation `, (err, result) => {
+      if (err) {
+        reject(err);
+        console.log(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+// admin auth
+function getAllAdmins() {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM admin `, (err, result) => {
+      if (err) {
+        reject(err);
+        console.log(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+function getAllAdminById(id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT * FROM admin Where admin_id= ? `,
+      [id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+          console.log(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
 //get all Reservation(for admin)
 function getBookingData() {
   return new Promise((resolve, reject) => {
     connection.query(
-      `SELECT r.*, u.user_name, u.user_phone, u.user_gmail
-    FROM reservation AS r
-    JOIN users AS u ON r.user_id = u.user_id`,
+      `SELECT r.*, u.user_name, u.user_phone, u.user_gmail, 
+        g.guest_name, g.guest_phone, g.guest_gmail
+ FROM reservation AS r
+ LEFT JOIN users AS u ON r.user_id = u.user_id
+ LEFT JOIN users_noacc AS g ON r.guest_id = g.guest_id`,
       (err, result) => {
         if (err) {
           reject(err);
@@ -695,7 +744,66 @@ function getTitleContent() {
     });
   });
 }
-
+function getOurStory() {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * from our_story`, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+        console.log(result);
+      }
+    });
+  });
+}
+function ModifyOurStory(admin_id, content, title, bgimg, slideimg) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE our_story
+      SET admin_id = ?, content = ?, title = ?, bgimage = ?, slideimage = ?
+      WHERE ourstory_id = 1`,
+      [admin_id, content, title, bgimg, slideimg],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+          console.log(result);
+        }
+      }
+    );
+  });
+}
+function ModifyGallery(galleryImg, img_id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE gallery
+      SET img= ?
+      WHERE img_id = ?`,
+      [galleryImg, img_id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+          console.log(result);
+        }
+      }
+    );
+  });
+}
+function getGalleryImg() {
+  return new Promise((resolve, reject) => {
+    connection.query(`select * from gallery`, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+        console.log(result);
+      }
+    });
+  });
+}
 module.exports = {
   setUserData,
   getUsersData,
@@ -713,12 +821,19 @@ module.exports = {
   removeCardData,
   setBookingData,
   getBookingData,
+  getOnlyResData,
   updateBookingData,
   deleteReservation,
   setUserNoAccData,
   setBookingDataNoAcc,
   getUserNoAccByMail,
   ModifyTitleContent,
+  ModifyOurStory,
   getTitleContent,
+  getOurStory,
+  getAllAdmins,
+  getAllAdminById,
+  ModifyGallery,
+  getGalleryImg,
   connection,
 };

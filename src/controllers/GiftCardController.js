@@ -110,7 +110,7 @@ class OrderController {
             res.status(500).send("An error occurred");
           });
       else {
-        res.send("existed Acc?");
+        res.send("not existed");
       }
     } catch (error) {
       console.error(error);

@@ -11,7 +11,7 @@ const {
 
 class BookingController {
   // hiển thị bài viết
-  show(req, res, next) {
+  async show(req, res, next) {
     Promise.all([getBookingData()])
       .then(([allReservation]) => {
         res.json(allReservation);

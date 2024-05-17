@@ -49,15 +49,14 @@ const createTablesQuery = `
   );
 
   CREATE TABLE IF NOT EXISTS events (
-    content_id INT NOT NULL AUTO_INCREMENT,
-    upload_time TIMESTAMP NULL DEFAULT NULL,
+    event_id INT NOT NULL AUTO_INCREMENT,
     admin_id INT DEFAULT NULL,
-    content VARCHAR(5000) DEFAULT NULL,
+    description VARCHAR(5000) DEFAULT NULL,
     title VARCHAR(2000) DEFAULT NULL,
-    PRIMARY KEY (content_id),
-    KEY admin_id (admin_id),
-    CONSTRAINT events_ibfk_1 FOREIGN KEY (content_id) REFERENCES content (content_id),
-    CONSTRAINT events_ibfk_2 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
+    image VARCHAR(1000) DEFAULT NULL,
+    PRIMARY KEY (event_id),
+    KEY (admin_id),
+    CONSTRAINT events_ibfk_1 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
   );
 
   CREATE TABLE IF NOT EXISTS gift_card (
@@ -546,6 +545,23 @@ function getOnlyResData() {
   });
 }
 
+function getOnlyResDataById(id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT * FROM reservation where reservation_id = ?`,
+      [id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+          console.log(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
 // admin auth
 function getAllAdmins() {
   return new Promise((resolve, reject) => {
@@ -804,6 +820,38 @@ function getGalleryImg() {
     });
   });
 }
+function getEvents() {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * from events`, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+        console.log(result);
+      }
+    });
+  });
+}
+
+function ModifyEvents(admin_id, description, title, image, event_id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE events
+      SET admin_id = ?, description = ?, title = ?, image = ?
+      WHERE event_id = ?`,
+      [admin_id, description, title, image, event_id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+          console.log(result);
+        }
+      }
+    );
+  });
+}
+
 module.exports = {
   setUserData,
   getUsersData,
@@ -835,5 +883,8 @@ module.exports = {
   getAllAdminById,
   ModifyGallery,
   getGalleryImg,
+  getOnlyResDataById,
+  getEvents,
+  ModifyEvents,
   connection,
 };

@@ -68,8 +68,8 @@ class ContentController {
       ) {
         await ModifyOurStory(
           1,
-          title,
           content,
+          title,
           bgImage?.path || storyBgImage,
           slideImage?.path || storySlideImage
         );

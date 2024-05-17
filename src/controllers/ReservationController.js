@@ -94,7 +94,7 @@ class BookingController {
       message
     )
       .then((data) => {
-        res.send(`Update success on reservation of user:  ${reservation_id}`);
+        res.send(`success:  ${reservation_id}`);
         console.log(data);
       })
       .catch((error) => {

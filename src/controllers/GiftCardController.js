@@ -5,6 +5,7 @@ const {
   setCardData,
   getUserByEmail,
   getUserById,
+  getGiftCardOrderByOrder,
 } = require("../../dbsetup");
 
 class OrderController {

@@ -1,15 +1,49 @@
+const { getEvents, ModifyEvents } = require("../../dbsetup");
+
 class EventController {
   // hiển thị bài viết
-  show(req, res, next) {}
-
-  // tạo ra bài viết mới
-  create(req, res, next) {}
+  async show(req, res, next) {
+    try {
+      const result = await getEvents();
+      return res.status(200).json(result);
+    } catch (error) {
+      console.log("error: ", error);
+      return res.status(500).json("something wrong");
+    }
+  }
 
   // edit bài viết
-  edit(req, res, next) {}
+  async edit(req, res, next) {
+    try {
+      const { content, title, event_id, image, admin_id } = req.body;
+      const fileData = req.file;
 
-  // xóa bài viết (soft delete)
-  delete(req, res, next) {}
+      if (
+        !event_id ||
+        !title ||
+        !content ||
+        !admin_id ||
+        (!fileData && !image)
+      ) {
+        return res.json({ error: "all fields" });
+      }
+
+      // Update the event with new details
+      await ModifyEvents(
+        admin_id,
+        content,
+        title,
+        fileData?.path || image,
+        event_id
+      );
+
+      // Respond with the path of the new image if uploaded, else with the old image
+      return res.status(200).send("success");
+    } catch (error) {
+      console.error(error);
+      next(error); // Pass the error to the error-handling middleware
+    }
+  }
 }
 
 module.exports = new EventController();

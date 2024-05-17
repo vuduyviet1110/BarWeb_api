@@ -49,15 +49,14 @@ const createTablesQuery = `
   );
 
   CREATE TABLE IF NOT EXISTS events (
-    content_id INT NOT NULL AUTO_INCREMENT,
-    upload_time TIMESTAMP NULL DEFAULT NULL,
+    event_id INT NOT NULL AUTO_INCREMENT,
     admin_id INT DEFAULT NULL,
-    content VARCHAR(5000) DEFAULT NULL,
+    description VARCHAR(5000) DEFAULT NULL,
     title VARCHAR(2000) DEFAULT NULL,
-    PRIMARY KEY (content_id),
-    KEY admin_id (admin_id),
-    CONSTRAINT events_ibfk_1 FOREIGN KEY (content_id) REFERENCES content (content_id),
-    CONSTRAINT events_ibfk_2 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
+    image VARCHAR(1000) DEFAULT NULL,
+    PRIMARY KEY (event_id),
+    KEY (admin_id),
+    CONSTRAINT events_ibfk_1 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
   );
 
   CREATE TABLE IF NOT EXISTS gift_card (
@@ -756,6 +755,7 @@ function getOurStory() {
     });
   });
 }
+
 function ModifyOurStory(admin_id, content, title, bgimg, slideimg) {
   return new Promise((resolve, reject) => {
     connection.query(
@@ -804,6 +804,40 @@ function getGalleryImg() {
     });
   });
 }
+
+function getEvents() {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * from events`, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+        console.log(result);
+      }
+    });
+  });
+}
+
+function ModifyEvents(admin_id, description, title, image) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE our_story
+      SET admin_id = ?, description = ?, title = ?, image = ?
+      WHERE admin_id = ?`,
+      [admin_id, description, title, image],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+          console.log(result);
+        }
+      }
+    );
+  });
+}
+
+
 module.exports = {
   setUserData,
   getUsersData,
@@ -835,5 +869,6 @@ module.exports = {
   getAllAdminById,
   ModifyGallery,
   getGalleryImg,
+  getEvents,
   connection,
 };

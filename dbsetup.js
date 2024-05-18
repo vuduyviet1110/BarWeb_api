@@ -20,127 +20,121 @@ connection.connect((err) => {
 });
 
 const createTablesQuery = `
-  -- Create users table
-  CREATE TABLE IF NOT EXISTS users (
-    user_id INT PRIMARY KEY AUTO_INCREMENT,
-    user_DOB DATE NOT NULL,
-    user_name VARCHAR(255) NOT NULL,
-    user_gmail VARCHAR(255) NOT NULL,
-    user_password VARCHAR(255) NOT NULL
-  );
+-- Create users table
+CREATE TABLE IF NOT EXISTS users (
+  user_id INT PRIMARY KEY AUTO_INCREMENT,
+  user_DOB DATE NOT NULL,
+  user_name VARCHAR(255) NOT NULL,
+  user_gmail VARCHAR(255) NOT NULL,
+  user_password VARCHAR(255) NOT NULL
+);
 
-  CREATE TABLE IF NOT EXISTS admin (
-    admin_id INT NOT NULL AUTO_INCREMENT,
-    admin_name VARCHAR(50) NOT NULL,
-    admin_password VARCHAR(50) NOT NULL,
-    PRIMARY KEY (admin_id)
-  );
+CREATE TABLE IF NOT EXISTS admin (
+  admin_id INT NOT NULL AUTO_INCREMENT,
+  admin_name VARCHAR(50) NOT NULL,
+  admin_password VARCHAR(50) NOT NULL,
+  PRIMARY KEY (admin_id)
+);
 
-  CREATE TABLE IF NOT EXISTS card_status (
-    card_status_id INT NOT NULL AUTO_INCREMENT,
-    card_status TINYINT(1) DEFAULT NULL,
-    PRIMARY KEY (card_status_id)
-  );
 
-  CREATE TABLE IF NOT EXISTS content (
-    content_id INT NOT NULL AUTO_INCREMENT,
-    content_columns VARCHAR(20) DEFAULT NULL,
-    PRIMARY KEY (content_id)
-  );
+CREATE TABLE IF NOT EXISTS content (
+  content_id INT NOT NULL AUTO_INCREMENT,
+  content_columns VARCHAR(20) DEFAULT NULL,
+  PRIMARY KEY (content_id)
+);
 
-  CREATE TABLE IF NOT EXISTS events (
-    event_id INT NOT NULL AUTO_INCREMENT,
-    admin_id INT DEFAULT NULL,
-    description VARCHAR(5000) DEFAULT NULL,
-    title VARCHAR(2000) DEFAULT NULL,
-    image VARCHAR(1000) DEFAULT NULL,
-    PRIMARY KEY (event_id),
-    KEY (admin_id),
-    CONSTRAINT events_ibfk_1 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
-  );
+CREATE TABLE IF NOT EXISTS events (
+  event_id INT NOT NULL AUTO_INCREMENT,
+  admin_id INT DEFAULT NULL,
+  description VARCHAR(5000) DEFAULT NULL,
+  title VARCHAR(2000) DEFAULT NULL,
+  image VARCHAR(1000) DEFAULT NULL,
+  PRIMARY KEY (event_id),
+  KEY (admin_id),
+  CONSTRAINT events_ibfk_1 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
+);
 
-  CREATE TABLE IF NOT EXISTS gift_card (
-    card_id INT NOT NULL AUTO_INCREMENT,
-    gift_card_selection VARCHAR(20) DEFAULT NULL,
-    price INT DEFAULT NULL,
-    PRIMARY KEY (card_id)
-  );
+CREATE TABLE IF NOT EXISTS beverage (
+  bev_id INT NOT NULL AUTO_INCREMENT,
+  admin_id INT DEFAULT NULL,
+  description VARCHAR(5000) DEFAULT NULL,
+  price int DEFAULT NULL,
+  image VARCHAR(1000) DEFAULT NULL,
+  PRIMARY KEY (event_id),
+  KEY (admin_id),
+  CONSTRAINT beverage_ibfk_1 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
+);
 
-  CREATE TABLE IF NOT EXISTS order_giftcard (
-    card_order_id INT NOT NULL AUTO_INCREMENT,
-    card_id INT DEFAULT NULL,
-    card_status_id INT DEFAULT NULL,
-    payment_method VARCHAR(20) DEFAULT NULL,
-    user_id INT DEFAULT NULL,
-    receiver_name VARCHAR(50) DEFAULT NULL,
-    receiver_mail VARCHAR(50) DEFAULT NULL,
-    receiver_phone VARCHAR(10) DEFAULT NULL,
-    receiver_address VARCHAR(300) DEFAULT NULL,
-    message VARCHAR(600) DEFAULT NULL,
-    PRIMARY KEY (card_order_id),
-    KEY user_id (user_id),
-    KEY card_id (card_id),
-    KEY card_status_id (card_status_id),
-    CONSTRAINT order_giftcard_ibfk_1 FOREIGN KEY (user_id) REFERENCES users (user_id),
-    CONSTRAINT order_giftcard_ibfk_2 FOREIGN KEY (card_id) REFERENCES gift_card (card_id),
-    CONSTRAINT order_giftcard_ibfk_3 FOREIGN KEY (card_status_id) REFERENCES card_status (card_status_id)
-  );
+CREATE TABLE IF NOT EXISTS order_giftcard (
+  card_order_id INT NOT NULL AUTO_INCREMENT,
+  card_id INT DEFAULT NULL,
+  card_status_id INT DEFAULT NULL,
+  payment_method VARCHAR(20) DEFAULT NULL,
+  user_id INT DEFAULT NULL,
+  receiver_name VARCHAR(50) DEFAULT NULL,
+  receiver_mail VARCHAR(50) DEFAULT NULL,
+  receiver_phone VARCHAR(10) DEFAULT NULL,
+  receiver_address VARCHAR(300) DEFAULT NULL,
+  message VARCHAR(600) DEFAULT NULL,
+  PRIMARY KEY (card_order_id),
+  KEY user_id (user_id),
+  KEY card_id (card_id),
+  KEY card_status_id (card_status_id),
+  CONSTRAINT order_giftcard_ibfk_1 FOREIGN KEY (user_id) REFERENCES users (user_id),
+  CONSTRAINT order_giftcard_ibfk_2 FOREIGN KEY (card_id) REFERENCES gift_card (card_id),
+  CONSTRAINT order_giftcard_ibfk_3 FOREIGN KEY (card_status_id) REFERENCES card_status (card_status_id)
+);
 
-  CREATE TABLE IF NOT EXISTS our_story (
-    ourstory_id INT AUTO_INCREMENT PRIMARY KEY,
-    upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    admin_id INT DEFAULT NULL,
-    content VARCHAR(1000) DEFAULT NULL,
-    title VARCHAR(2000)  NOT NULL,
-    bgimage VARCHAR(2000) NOT NULL, 
-    slideimage VARCHAR(2000) NOT NULL, 
-    FOREIGN KEY (admin_id) REFERENCES admin(admin_id) 
-  );
+CREATE TABLE IF NOT EXISTS our_story (
+  ourstory_id INT AUTO_INCREMENT PRIMARY KEY,
+  upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  admin_id INT DEFAULT NULL,
+  content VARCHAR(1000) DEFAULT NULL,
+  title VARCHAR(2000)  NOT NULL,
+  bgimage VARCHAR(2000) NOT NULL, 
+  slideimage VARCHAR(2000) NOT NULL, 
+  FOREIGN KEY (admin_id) REFERENCES admin(admin_id) 
+);
 
-  CREATE TABLE IF NOT EXISTS reservation_status (
-    reservation_status_id INT NOT NULL ,
-    reservation_status TINYINT(1) DEFAULT NULL,
-    PRIMARY KEY (reservation_status_id)
-  );
+CREATE TABLE IF NOT EXISTS reservation_status (
+  reservation_status_id INT NOT NULL ,
+  reservation_status TINYINT(1) DEFAULT NULL,
+  PRIMARY KEY (reservation_status_id)
+);
 
-  CREATE TABLE IF NOT EXISTS table_slots (
-    table_id INT NOT NULL AUTO_INCREMENT,
-    table_number INT DEFAULT NULL,
-    PRIMARY KEY (table_id)
-  );
-  CREATE TABLE IF NOT EXISTS gallery (
-    img_id INT NOT NULL AUTO_INCREMENT,
-    img varchar(1000) NOT NULL,
-    PRIMARY KEY (img_id)
-  );
-  CREATE TABLE IF NOT EXISTS reservation (
-    reservation_id INT NOT NULL AUTO_INCREMENT,
-    table_id INT DEFAULT NULL,
-    reservation_status_id INT DEFAULT NULL,
-    user_id INT DEFAULT NULL,
-    table_date DATE DEFAULT NULL,
-    table_time TIME DEFAULT NULL,
-    table_status TINYINT(1) DEFAULT NULL,
-    PRIMARY KEY (reservation_id),
-    KEY table_id (table_id),
-    KEY reservation_status_id (reservation_status_id),
-    KEY user_id (user_id),
-    CONSTRAINT reservation_ibfk_1 FOREIGN KEY (table_id) REFERENCES table_slots (table_id),
-    CONSTRAINT reservation_ibfk_2 FOREIGN KEY (reservation_status_id) REFERENCES reservation_status (reservation_status_id),
-    CONSTRAINT reservation_ibfk_3 FOREIGN KEY (user_id) REFERENCES users (user_id)
-  );
+CREATE TABLE IF NOT EXISTS gallery (
+  img_id INT NOT NULL AUTO_INCREMENT,
+  img varchar(1000) NOT NULL,
+  PRIMARY KEY (img_id)
+);
+CREATE TABLE IF NOT EXISTS reservation (
+  reservation_id INT NOT NULL AUTO_INCREMENT,
+  table_id INT DEFAULT NULL,
+  reservation_status_id INT DEFAULT NULL,
+  user_id INT DEFAULT NULL,
+  table_date DATE DEFAULT NULL,
+  table_time TIME DEFAULT NULL,
+  table_status TINYINT(1) DEFAULT NULL,
+  PRIMARY KEY (reservation_id),
+  KEY table_id (table_id),
+  KEY reservation_status_id (reservation_status_id),
+  KEY user_id (user_id),
+  CONSTRAINT reservation_ibfk_1 FOREIGN KEY (table_id) REFERENCES table_slots (table_id),
+  CONSTRAINT reservation_ibfk_2 FOREIGN KEY (reservation_status_id) REFERENCES reservation_status (reservation_status_id),
+  CONSTRAINT reservation_ibfk_3 FOREIGN KEY (user_id) REFERENCES users (user_id)
+);
 
-  CREATE TABLE IF NOT EXISTS title (
-    upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    admin_id INT DEFAULT NULL,
-    content VARCHAR(1000) DEFAULT NULL,
-    title_id INT AUTO_INCREMENT PRIMARY KEY,
-    image VARCHAR(2000) NOT NULL, 
-    title VARCHAR(2000)  NOT NULL,
-    FOREIGN KEY (admin_id) REFERENCES admin(admin_id) 
-  );
-  
-  
+CREATE TABLE IF NOT EXISTS title (
+  upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  admin_id INT DEFAULT NULL,
+  content VARCHAR(1000) DEFAULT NULL,
+  title_id INT AUTO_INCREMENT PRIMARY KEY,
+  image VARCHAR(2000) NOT NULL, 
+  title VARCHAR(2000)  NOT NULL,
+  FOREIGN KEY (admin_id) REFERENCES admin(admin_id) 
+);
+
+
 `;
 
 // const initDataQuery = `
@@ -545,23 +539,6 @@ function getOnlyResData() {
   });
 }
 
-function getOnlyResDataById(id) {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      `SELECT * FROM reservation where reservation_id = ?`,
-      [id],
-      (err, result) => {
-        if (err) {
-          reject(err);
-          console.log(err);
-        } else {
-          resolve(result);
-        }
-      }
-    );
-  });
-}
-
 // admin auth
 function getAllAdmins() {
   return new Promise((resolve, reject) => {
@@ -772,6 +749,7 @@ function getOurStory() {
     });
   });
 }
+
 function ModifyOurStory(admin_id, content, title, bgimg, slideimg) {
   return new Promise((resolve, reject) => {
     connection.query(
@@ -820,6 +798,7 @@ function getGalleryImg() {
     });
   });
 }
+
 function getEvents() {
   return new Promise((resolve, reject) => {
     connection.query(`Select * from events`, (err, result) => {
@@ -833,7 +812,7 @@ function getEvents() {
   });
 }
 
-function ModifyEvents(admin_id, description, title, image, event_id) {
+function ModifyEvents(admin_id, description, title, image,event_id) {
   return new Promise((resolve, reject) => {
     connection.query(
       `UPDATE events
@@ -851,6 +830,41 @@ function ModifyEvents(admin_id, description, title, image, event_id) {
     );
   });
 }
+
+
+function getBeverage() {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * from beverage`, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+        console.log(result);
+      }
+    });
+  });
+}
+
+
+function ModifyBeverage(admin_id, description, price, image, bev_id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE beverage
+      SET admin_id = ?, description = ?, price = ?, image = ?
+      WHERE bev_id = ?`,
+      [admin_id, description, price, image, bev_id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+          console.log(result);
+        }
+      }
+    );
+  });
+}
+
 
 module.exports = {
   setUserData,
@@ -883,8 +897,9 @@ module.exports = {
   getAllAdminById,
   ModifyGallery,
   getGalleryImg,
-  getOnlyResDataById,
   getEvents,
   ModifyEvents,
+  getBeverage,
+  ModifyBeverage,
   connection,
 };

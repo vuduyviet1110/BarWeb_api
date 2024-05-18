@@ -1,10 +1,10 @@
-const { getEvents, ModifyEvents } = require("../../dbsetup");
+const { getBeverage, ModifyBeverage } = require("../../dbsetup");
 
 class EventController {
   // hiển thị bài viết
   async show(req, res, next) {
     try {
-      const result = await getEvents();
+      const result = await getBeverage();
       return res.status(200).json(result);
     } catch (error) {
       console.log("error: ", error);
@@ -15,26 +15,28 @@ class EventController {
   // edit bài viết
   async edit(req, res, next) {
     try {
-      const {admin_id, description, title, image,event_id} = req.body;
+      const {admin_id, name, description, price, image, bev_id} = req.body;
       const fileData = req.file;
 
       if (
         !admin_id ||
+        !name ||
         !description ||
-        !title ||
-        !event_id ||
+        !price ||
+        !bev_id ||
         (!fileData && !image)
       ) {
         return res.json({ error: "all fields" });
       }
 
       // Update the event with new details
-      await ModifyEvents(
+      await ModifyBeverage(
         admin_id,
+        name,
         description,
-        title,
+        price,
         fileData?.path || image,
-        event_id
+        bev_id
       );
 
       // Respond with the path of the new image if uploaded, else with the old image
@@ -46,4 +48,4 @@ class EventController {
   }
 }
 
-module.exports = new EventController();
+module.exports = new BeverageController();

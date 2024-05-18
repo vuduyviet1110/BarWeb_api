@@ -108,6 +108,18 @@ const createTablesQuery = `
     table_number INT DEFAULT NULL,
     PRIMARY KEY (table_id)
   );
+
+  CREATE TABLE IF NOT EXISTS beverage (
+    bev_id INT NOT NULL AUTO_INCREMENT,
+    admin_id INT DEFAULT NULL,
+    description VARCHAR(5000) DEFAULT NULL,
+    price int DEFAULT NULL,
+    image VARCHAR(1000) DEFAULT NULL,
+    PRIMARY KEY (bev_id),
+    KEY (admin_id),
+    CONSTRAINT beverage_ibfk_1 FOREIGN KEY (admin_id) REFERENCES admin (admin_id)
+  );
+
   CREATE TABLE IF NOT EXISTS gallery (
     img_id INT NOT NULL AUTO_INCREMENT,
     img varchar(1000) NOT NULL,
@@ -851,6 +863,37 @@ function ModifyEvents(admin_id, description, title, image, event_id) {
     );
   });
 }
+function getBeverage() {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * from beverage`, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+        console.log(result);
+      }
+    });
+  });
+}
+
+function ModifyBeverage(admin_id, name, description, price, image, bev_id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE beverage
+      SET admin_id = ?, name = ?, description = ?, price = ?, image = ?
+      WHERE bev_id = ?`,
+      [admin_id, name, description, price, image, bev_id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+          console.log(result);
+        }
+      }
+    );
+  });
+}
 
 module.exports = {
   setUserData,
@@ -886,5 +929,7 @@ module.exports = {
   getOnlyResDataById,
   getEvents,
   ModifyEvents,
+  getBeverage,
+  ModifyBeverage,
   connection,
 };

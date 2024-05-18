@@ -5,6 +5,7 @@ const manageUserRoute = require("./manageUser");
 const manageImageRoute = require("./manageImage");
 const manageEvent = require("./manageEvent");
 const adminAuth = require("./accountAuthentication");
+const manageBeverageRoute = require("./manageBeverage");
 function Adroute(app) {
   app.use("/admin/content", manageContentRoute);
   app.use("/admin/gallery", manageImageRoute);
@@ -13,5 +14,6 @@ function Adroute(app) {
   app.use("/admin/user", manageUserRoute);
   app.use("/admin/event", manageEvent);
   app.use("/admin/auth", adminAuth);
+  app.use("/admin/beverage", manageBeverageRoute);
 }
 module.exports = Adroute;

@@ -1,4 +1,8 @@
-const { updateUserData } = require("../../dbsetup");
+const {
+  updateUserData,
+  EmailExisted,
+  EmailExistedApartFromCurrentUser,
+} = require("../../dbsetup");
 class ProfileUserController {
   // hiển thị bài viết
   show(req, res, next) {
@@ -13,7 +17,7 @@ class ProfileUserController {
   }
 
   // edit bài viết
-  edit(req, res, next) {
+  async edit(req, res, next) {
     const {
       user_name,
       user_gmail,
@@ -22,22 +26,31 @@ class ProfileUserController {
       user_phone,
       user_id,
     } = req.body;
-
-    updateUserData(
-      user_name,
-      user_gmail,
-      user_password,
-      user_DOB,
-      user_phone,
-      user_id
-    )
-      .then(() => {
-        res.send(`Update success on user ${user_id}`);
-      })
-      .catch((error) => {
-        console.error(error);
-        res.status(500).json({ error: "An error occurred" });
-      });
+    if ((user_name, user_gmail, user_password, user_DOB, user_phone, user_id)) {
+      const ExistedEmail = await EmailExistedApartFromCurrentUser(
+        user_gmail,
+        user_id
+      );
+      if (ExistedEmail > 0) {
+        res.send("existed email");
+      } else {
+        updateUserData(
+          user_name,
+          user_gmail,
+          user_password,
+          user_DOB,
+          user_phone,
+          user_id
+        )
+          .then(() => {
+            res.send("success");
+          })
+          .catch((error) => {
+            console.error(error);
+            res.status(500).json({ error: "An error occurred" });
+          });
+      }
+    }
   }
 
   // xóa bài viết (soft delete)

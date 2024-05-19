@@ -1,35 +1,29 @@
 const { setUserData, EmailExisted } = require("../../dbsetup");
-class SinUpController {
-  // tạo ra bài viết mới
-  create(req, res) {
-    // lấy body từ form của client gửi lên
-    const { name, gmail, password, DOB, phone } = req.body;
-    //lấy giá trị body đó truyền vào hàm setUserData đã define trước đó
-    EmailExisted(gmail)
-      .then((existedEmail) => {
-        if (existedEmail.length > 0) {
-          // Nếu email đã tồn tại, trả về thông báo lỗi
-          res.send("existed email");
-        } else {
-          // Nếu email chưa tồn tại, tiến hành tạo mới người dùng
-          setUserData(name, gmail, password, DOB, phone)
-            .then((newUser) => {
-              // Nếu tạo mới người dùng thành công, trả về thông tin người dùng
-              res.json(newUser);
-            })
-            .catch((err) => {
-              // Xử lý lỗi nếu có
-              console.error(err);
-              res.status(500).send("Internal Error");
-            });
-        }
-      })
-      .catch((err) => {
-        // Xử lý lỗi nếu có
-        console.error(err);
-        res.status(500).send("Internal Error");
-      });
+
+class SignUpController {
+  // Create a new user
+  async create(req, res) {
+    try {
+      // Extract data from the request body
+      const { name, gmail, password, DOB, phone } = req.body;
+
+      // Check if the email already exists
+      const existedMail = await EmailExisted(gmail);
+      if (existedMail > 0) {
+        // If email already exists, return an error message
+        return res.send("Email exists");
+      } else {
+        // If email does not exist, proceed to create a new user
+        const newUser = await setUserData(name, gmail, password, DOB, phone);
+        // Return the new user data
+        return res.json(newUser);
+      }
+    } catch (err) {
+      // Handle any errors that occur
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
   }
 }
 
-module.exports = new SinUpController();
+module.exports = new SignUpController();

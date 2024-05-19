@@ -682,6 +682,22 @@ function EmailExisted(user_email) {
     );
   });
 }
+function EmailExistedApartFromCurrentUser(user_email, current_user_id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "SELECT * FROM users WHERE user_gmail = ? AND user_id != ? ",
+      [user_email, current_user_id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result.length);
+          console.log("Email Existed: " + result.length);
+        }
+      }
+    );
+  });
+}
 function setBookingDataNoAcc(
   guest_id,
   table_date,
@@ -931,5 +947,6 @@ module.exports = {
   ModifyEvents,
   getBeverage,
   ModifyBeverage,
+  EmailExistedApartFromCurrentUser,
   connection,
 };

@@ -42,11 +42,7 @@ const createTablesQuery = `
     PRIMARY KEY (card_status_id)
   );
 
-  CREATE TABLE IF NOT EXISTS content (
-    content_id INT NOT NULL AUTO_INCREMENT,
-    content_columns VARCHAR(20) DEFAULT NULL,
-    PRIMARY KEY (content_id)
-  );
+  
 
   CREATE TABLE IF NOT EXISTS events (
     event_id INT NOT NULL AUTO_INCREMENT,
@@ -96,18 +92,7 @@ const createTablesQuery = `
     slideimage VARCHAR(2000) NOT NULL, 
     FOREIGN KEY (admin_id) REFERENCES admin(admin_id) 
   );
-
-  CREATE TABLE IF NOT EXISTS reservation_status (
-    reservation_status_id INT NOT NULL ,
-    reservation_status TINYINT(1) DEFAULT NULL,
-    PRIMARY KEY (reservation_status_id)
-  );
-
-  CREATE TABLE IF NOT EXISTS table_slots (
-    table_id INT NOT NULL AUTO_INCREMENT,
-    table_number INT DEFAULT NULL,
-    PRIMARY KEY (table_id)
-  );
+  
 
   CREATE TABLE IF NOT EXISTS beverage (
     bev_id INT NOT NULL AUTO_INCREMENT,
@@ -123,7 +108,10 @@ const createTablesQuery = `
   CREATE TABLE IF NOT EXISTS gallery (
     img_id INT NOT NULL AUTO_INCREMENT,
     img varchar(1000) NOT NULL,
-    PRIMARY KEY (img_id)
+    PRIMARY KEY (img_id),
+    admin_id INT DEFAULT NULL,
+    FOREIGN KEY (admin_id) REFERENCES admin(admin_id) 
+
   );
   CREATE TABLE IF NOT EXISTS reservation (
     reservation_id INT NOT NULL AUTO_INCREMENT,
@@ -818,7 +806,25 @@ function ModifyOurStory(admin_id, content, title, bgimg, slideimg) {
     );
   });
 }
-function ModifyGallery(galleryImg, img_id) {
+function ModifyGallery(galleryImg, admin_id, img_id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE gallery
+      SET img= ?, admin_id = ?
+      WHERE img_id = ?`,
+      [galleryImg, admin_id, img_id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+          console.log(result);
+        }
+      }
+    );
+  });
+}
+function ModifyGalleryNotAdmin(galleryImg, img_id) {
   return new Promise((resolve, reject) => {
     connection.query(
       `UPDATE gallery
@@ -836,6 +842,7 @@ function ModifyGallery(galleryImg, img_id) {
     );
   });
 }
+
 function getGalleryImg() {
   return new Promise((resolve, reject) => {
     connection.query(`select * from gallery`, (err, result) => {
@@ -941,6 +948,7 @@ module.exports = {
   getAllAdmins,
   getAllAdminById,
   ModifyGallery,
+  ModifyGalleryNotAdmin,
   getGalleryImg,
   getOnlyResDataById,
   getEvents,

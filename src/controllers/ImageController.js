@@ -20,6 +20,7 @@ class ImageController {
         images6,
         images7,
         images8,
+        ad_id,
       } = req.body;
 
       const uploadedImages = {};
@@ -42,14 +43,15 @@ class ImageController {
 
       if (hasUploadedImages) {
         // Call ModifyGallery for each uploaded image
-        await ModifyGallery(uploadedImages.images1 || images1, 1);
-        await ModifyGallery(uploadedImages.images2 || images2, 2);
-        await ModifyGallery(uploadedImages.images3 || images3, 3);
-        await ModifyGallery(uploadedImages.images4 || images4, 4);
-        await ModifyGallery(uploadedImages.images5 || images5, 5);
-        await ModifyGallery(uploadedImages.images6 || images6, 6);
-        await ModifyGallery(uploadedImages.images7 || images7, 7);
-        await ModifyGallery(uploadedImages.images8 || images8, 8);
+
+        await ModifyGallery(uploadedImages.images1 || images1, ad_id, 1);
+        await ModifyGallery(uploadedImages.images2 || images2, ad_id, 2);
+        await ModifyGallery(uploadedImages.images3 || images3, ad_id, 3);
+        await ModifyGallery(uploadedImages.images4 || images4, ad_id, 4);
+        await ModifyGallery(uploadedImages.images5 || images5, ad_id, 5);
+        await ModifyGallery(uploadedImages.images6 || images6, ad_id, 6);
+        await ModifyGallery(uploadedImages.images7 || images7, ad_id, 7);
+        await ModifyGallery(uploadedImages.images8 || images8, ad_id, 8);
         res.send("successfully");
       } else {
         // Handle the case where no images were uploaded (optional)

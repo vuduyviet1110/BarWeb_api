@@ -26,7 +26,7 @@ class GiftCardUserController {
         receiver_message,
       } = req.body;
 
-      const card_status_id = 2;
+      const card_status_id = 1;
 
       setCardData(
         card_status_id,

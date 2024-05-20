@@ -89,7 +89,7 @@ class OrderController {
         message,
       } = req.body.newGiftCardOrder;
 
-      const card_status_id = 2;
+      const card_status_id = 1;
 
       const existedUser = await getUserByEmail(user_gmail);
       if (existedUser?.user_id)

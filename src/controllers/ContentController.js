@@ -54,7 +54,7 @@ class ContentController {
   // edit our story trong phần content
   async editOurStory(req, res, next) {
     try {
-      const { title, content, storyBgImage, storySlideImage } = req.body;
+      const { title, content, storyBgImage, storySlideImage, ad_id } = req.body;
       const bgImage = req.files.storyBgImage ? req.files.storyBgImage[0] : null;
       const slideImage = req.files.storySlideImage
         ? req.files.storySlideImage[0]
@@ -67,7 +67,7 @@ class ContentController {
         (slideImage || storySlideImage)
       ) {
         await ModifyOurStory(
-          1,
+          ad_id,
           content,
           title,
           bgImage?.path || storyBgImage,

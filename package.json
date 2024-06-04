@@ -14,9 +14,7 @@
     "nodemon": "^3.1.0"
   },
   "scripts": {
-    "start": "node dist/server.js",
-    "dev": "nodemon --exec babel-node src/server.js",
-    "build": "babel src --out-dir dist"
+    "start": " nodemon --inspect server.js"
   },
   "name": "barwebite_api",
   "version": "1.0.0",
@@ -31,10 +29,5 @@
     "url": "https://github.com/vuduyviet1110/BarWeb_api/issues"
   },
   "homepage": "https://github.com/vuduyviet1110/BarWeb_api#readme",
-  "description": "",
-  "devDependencies": {
-    "@babel/cli": "^7.24.6",
-    "@babel/core": "^7.24.6",
-    "@babel/preset-env": "^7.24.6"
-  }
+  "description": ""
 }

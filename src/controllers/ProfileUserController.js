@@ -1,6 +1,5 @@
 const {
   updateUserData,
-  EmailExisted,
   EmailExistedApartFromCurrentUser,
 } = require("../../dbsetup");
 class ProfileUserController {

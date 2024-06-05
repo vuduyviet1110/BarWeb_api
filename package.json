@@ -14,7 +14,8 @@
     "nodemon": "^3.1.0"
   },
   "scripts": {
-    "start": " nodemon --inspect server.js"
+    "start": " nodemon --inspect server.js",
+    "build": " node server.js"
   },
   "name": "barwebite_api",
   "version": "1.0.0",

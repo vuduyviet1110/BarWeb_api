@@ -2,6 +2,8 @@ const {
   updateUserData,
   EmailExistedApartFromCurrentUser,
 } = require("../../dbsetup");
+const bcrypt = require("bcrypt");
+
 class ProfileUserController {
   // hiển thị bài viết
   show(req, res, next) {
@@ -33,6 +35,7 @@ class ProfileUserController {
       if (ExistedEmail > 0) {
         res.send("existed email");
       } else {
+        // Hash the password with the generated salt
         updateUserData(
           user_name,
           user_gmail,

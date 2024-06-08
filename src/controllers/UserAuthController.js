@@ -1,57 +1,86 @@
-const { connection } = require("../../dbsetup");
+const { getUserByEmail } = require("../../dbsetup");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const TokenManagement = require("../utils/token");
+
+let refreshTokens = [];
 class SinInController {
   // tạo ra bài viết mới
-  Auth(req, res, next) {
+  async Auth(req, res, next) {
     let gmail = req.body.user_gmail;
     let password = req.body.user_password;
 
-    if (gmail && password) {
-      connection.query(
-        "SELECT * FROM users WHERE user_gmail = ? AND user_password = ?",
-        [gmail, password],
-        function (error, matched_users) {
-          if (error) {
-            throw error;
-          }
-          if (matched_users.length > 0) {
-            //Lấy user_id của người dùng đầu tiên phù hợp
-            const data = matched_users[0];
-            var token = jwt.sign({ user_id: data.user_id }, "mk");
-            return res.json({
-              msg: "Success",
-              token: token,
-              data: data,
-            });
+    if (gmail) {
+      try {
+        const matched_user = await getUserByEmail(gmail);
+        if (matched_user) {
+          const validPassword = await bcrypt.compare(
+            password,
+            matched_user.user_password
+          );
+          if (!validPassword) {
+            res.json("wrong pwd");
           } else {
-            res.send("Incorrect Username and/or Password!");
+            const accessToken =
+              TokenManagement.generateAccessToken(matched_user);
+            const refreshToken =
+              TokenManagement.generateRefreshToken(matched_user);
+
+            refreshTokens.push(refreshToken);
+            res.cookie("refreshToken", refreshToken, {
+              httpOnly: true,
+              secure: false,
+              path: "/",
+              sameSite: "strict",
+            });
+            res.status(200).json({ matched_user, accessToken, refreshToken });
           }
-          res.end();
+        } else {
+          res.send("Incorrect Username and/or Password!");
         }
-      );
+      } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+      }
     } else {
       res.send("Please enter Username and Password!");
-      res.end();
     }
   }
-  private(req, res, next) {
+
+  // Bình thường thì dùng redis để lưu trữ refresh token?
+  requestRefreshToken(req, res, next) {
     try {
-      var token = req.params.token;
-      var result = jwt.verify(token, "mk");
-      res.send(result);
-      if (result) {
-        next();
-      }
-    } catch (error) {
-      return res.redirect("/");
-    }
+      //Take refresh token from user
+      const refreshToken = req.cookies.refreshToken;
+      if (!refreshToken) return res.status(401).json("not authenticated");
+      jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN, (err, user) => {
+        if (err) {
+          console.log(err);
+        }
+        refreshTokens = refreshToken.filter((token) => token !== refreshToken);
+        const newAccessToken = TokenManagement.generateAccessToken(user);
+        const newRefreshToken = TokenManagement.generateRefreshToken(user);
 
-    // Nếu xác thực thành công, tiếp tục sang middleware hoặc handler tiếp theo
+        refreshTokens.push(newRefreshToken);
+        res.cookie("refreshToken", newRefreshToken, {
+          httpOnly: true,
+          secure: false,
+          path: "/",
+          sameSite: "strict",
+        });
+        res.status(200).json({ accessToken: newAccessToken });
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  // Handler trả về dữ liệu sau khi xác thực thành công
-  welcome(req, res, next) {
-    res.json({ message: "Welcome" });
+  userLogout(req, res) {
+    res.clearCookie("refreshToken");
+    refreshTokens = refreshTokens.filter(
+      (token) => token !== req.cookies.refreshToken
+    );
+    res.status(200).json("Logged out");
   }
 }
 

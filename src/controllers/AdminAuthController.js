@@ -13,7 +13,10 @@ class AdminAuthController {
 
       if (admin) {
         // Admin found, handle the success case
-        res.status(200).json({ message: "Admin found", admin });
+        res.status(200).json({
+          message: "Admin found",
+          admin: { id: admin.admin_id, name: admin.admin_name },
+        });
       } else {
         // Admin not found, handle the failure case
         res.send("Invalid");

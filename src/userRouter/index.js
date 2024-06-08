@@ -10,7 +10,7 @@ function Userroute(app) {
   app.use("/profile", editAccountRoute);
   app.use("/booking", BookingRoute);
   app.use("/giftCard", purchaseGiftCardRoute);
-  app.use("/sign-in", accountAuthenticationRoute);
+  app.use("/auth", accountAuthenticationRoute);
   app.use("/sign-up", signUpRoute);
   app.use("/change-password", changePasswordRoute);
   app.use("/reset-password", ResetPasswordRoute);

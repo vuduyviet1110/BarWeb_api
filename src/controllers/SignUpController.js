@@ -1,4 +1,5 @@
 const { setUserData, EmailExisted } = require("../../dbsetup");
+const bcrypt = require("bcrypt");
 
 class SignUpController {
   // Create a new user
@@ -11,12 +12,20 @@ class SignUpController {
       const existedMail = await EmailExisted(gmail);
       if (existedMail > 0) {
         // If email already exists, return an error message
-        return res.send("Email exists");
+        return res.status(400).send("Email already exists"); // Use 400 for bad request
       } else {
-        // If email does not exist, proceed to create a new user
-        const newUser = await setUserData(name, gmail, password, DOB, phone);
-        // Return the new user data
-        return res.json(newUser);
+        // Generate a random salt for password hashing
+        const saltRounds = 10; // Adjust this value as needed (higher = stronger)
+        const salt = await bcrypt.genSalt(saltRounds);
+
+        // Hash the password with the generated salt
+        const hash = await bcrypt.hash(password, salt);
+
+        // Create a new user with the hashed password
+        const newUser = await setUserData(name, gmail, hash, DOB, phone);
+
+        // Return success message
+        return res.status(201).send("Successfully created new user!"); // Use 201 for created
       }
     } catch (err) {
       // Handle any errors that occur

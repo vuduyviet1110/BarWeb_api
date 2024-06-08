@@ -1,4 +1,4 @@
-var whitelist = ["https://bar-khnqklwy9-vuduyviet1110s-projects.vercel.app"];
+var whitelist = ["http://localhost:3000"];
 const corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
@@ -7,6 +7,5 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
+  credentials: true,
 };
-
-module.exports = { corsOptions };

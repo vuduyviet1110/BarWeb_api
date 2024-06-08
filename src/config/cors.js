@@ -1,4 +1,4 @@
-var whitelist = ["http://localhost:3000"];
+var whitelist = ["bar-web-seven.vercel.app"];
 const corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {

@@ -1,2 +1,3 @@
 login for admin: 
-Admin1 - pwd: password1
+id: Admin1
+pwd: password1

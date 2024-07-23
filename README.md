@@ -1,3 +1,4 @@
-login for admin: 
-id: Admin1 -
+Login for admin: 
+d
+id: Admin1
 pwd: password1

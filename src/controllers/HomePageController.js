@@ -9,8 +9,6 @@ class HomePageController {
           (user) => user.user_id.toString() === reqId
         );
         if (matchedId) {
-          console.log(matchedId);
-          console.log(reqId);
           res.json(matchedId);
         } else {
           res.send("No Users have been found");

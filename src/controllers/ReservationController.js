@@ -12,7 +12,8 @@ const {
 class BookingController {
   // hiển thị bài viết
   async show(req, res, next) {
-    Promise.all([getBookingData()])
+    const pageNumber = parseInt(req.query.page);
+    Promise.all([getBookingData(pageNumber)])
       .then(([allReservation]) => {
         res.json(allReservation);
       })
@@ -39,7 +40,6 @@ class BookingController {
 
         const noteExistedEmail = await EmailExisted(user_gmail);
         if (noteExistedEmail === 0) {
-          console.log("chưa tồn tại");
           await setUserNoAccData(user_name, user_gmail, user_phone);
           const guests = await getUserNoAccByMail(user_gmail);
           guest_id = guests[0]?.guest_id;
@@ -53,7 +53,6 @@ class BookingController {
           );
         } else {
           guest_id = 1;
-          console.log("đã tồn tại");
           const user = await getUserByEmail(user_gmail);
           const user_id = user.user_id; // Assign the correct value received from getUserByEmail
           setBookingData(
@@ -85,7 +84,6 @@ class BookingController {
   edit(req, res, next) {
     const { reservation_id, table_date, table_time, number_people, message } =
       req.body.MatchedReservation;
-    console.log(table_date, table_time, number_people, message);
     updateBookingData(
       reservation_id,
       table_date,
@@ -95,7 +93,6 @@ class BookingController {
     )
       .then((data) => {
         res.send(`success:  ${reservation_id}`);
-        console.log(data);
       })
       .catch((error) => {
         console.error(error);
@@ -112,7 +109,6 @@ class BookingController {
       })
       .catch((error) => {
         res.status(500).json({ error: "An error occurred" });
-        console.log(error);
       });
   }
 }

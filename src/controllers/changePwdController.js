@@ -4,7 +4,6 @@ class ContentController {
   // hiển thị bài viết
   async changePassword(req, res, next) {
     const { newpwd, oldpwd, user_id } = req.body;
-    console.log(newpwd, oldpwd, user_id);
     const matched_user = await getUserById(user_id);
     if (newpwd && oldpwd && user_id) {
       const validPassword = await bcrypt.compare(

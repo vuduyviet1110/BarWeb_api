@@ -4,32 +4,36 @@ const {
   putCardData,
   setCardData,
   getUserByEmail,
-  getUserById,
-  getGiftCardOrderByOrder,
 } = require("../../dbsetup");
 
 class OrderController {
   //get tất cả order rượu từ khách hàng
   showAll(req, res) {
-    getGiftCardOrders()
+    const pageNumber = parseInt(req.query.page) || 1;
+    const { sortingPayment, sortingAmount, sortingDate } = req.query;
+
+    // Combine sorting logic
+    let sortBy;
+    if (sortingPayment) {
+      sortBy = { sortingPayment };
+    } else if (sortingAmount) {
+      sortBy = { sortingAmount };
+    } else if (sortingDate) {
+      sortBy = { sortingDate };
+    }
+
+    // If no sorting parameter is provided, use a default sorting
+    if (!sortBy) {
+      sortBy = { sortingDate: "desc" };
+    }
+
+    getGiftCardOrders(pageNumber, sortBy)
       .then((data) => {
         res.json(data);
       })
       .catch((error) => {
         console.error(error);
         res.status(500).send("An error occurred");
-      });
-  }
-
-  // get order cụ thể theo người dùng
-  showDetails(req, res) {
-    const id = req.params.id;
-    getGiftCardOrderByOrder(id)
-      .then((order) => {
-        res.send(order);
-      })
-      .catch((error) => {
-        res.status(500).json({ error: "An error occurred" });
       });
   }
 
@@ -44,7 +48,7 @@ class OrderController {
       message,
       user_amount,
       card_order_id,
-    } = req.body.MatchedGiftCard;
+    } = req.body.giftcard;
 
     putCardData(
       card_status_id,
@@ -58,7 +62,7 @@ class OrderController {
       card_order_id
     )
       .then(() => {
-        res.send("Fix order success");
+        res.status(200).send("ok");
       })
       .catch((error) => {
         console.error(error);

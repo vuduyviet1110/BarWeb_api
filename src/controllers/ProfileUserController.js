@@ -45,7 +45,7 @@ class ProfileUserController {
           user_id
         )
           .then(() => {
-            res.send("success");
+            res.status(200).send("success");
           })
           .catch((error) => {
             console.error(error);
@@ -64,7 +64,6 @@ class ProfileUserController {
       })
       .catch((error) => {
         res.status(500).json({ error: "An error occurred" });
-        console.log(error);
       });
   }
 }

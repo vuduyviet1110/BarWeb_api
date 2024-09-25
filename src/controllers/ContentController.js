@@ -12,7 +12,6 @@ class ContentController {
       const result = await getTitleContent();
       return res.status(200).json(result);
     } catch (error) {
-      console.log("error: ", error);
       return res.status(500).json("something wrong");
     }
   }
@@ -22,7 +21,6 @@ class ContentController {
       const result = await getOurStory();
       return res.status(200).json(result);
     } catch (error) {
-      console.log("error: ", error);
       return res.status(500).json("something wrong");
     }
   }
@@ -40,14 +38,13 @@ class ContentController {
           await ModifyTitleContent(ad_id, content, title, image);
         } else {
           await ModifyTitleContent(ad_id, content, title, fileData.path);
-          // console.log("file: ", fileData?.path, "image: ", image);
           return res.status(200).json({ file: fileData?.path });
         }
       } else {
-        // res.json("leave blank?");
+        return res.status(500).json("complete all the fields");
       }
     } catch (error) {
-      console.log(error);
+      return res.status(500).json("something wrong");
     }
   }
 

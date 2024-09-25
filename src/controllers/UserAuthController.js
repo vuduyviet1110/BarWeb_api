@@ -39,7 +39,6 @@ class SinInController {
           res.send("Incorrect Username and/or Password!");
         }
       } catch (error) {
-        console.log(error);
         res.status(500).send(error);
       }
     } else {

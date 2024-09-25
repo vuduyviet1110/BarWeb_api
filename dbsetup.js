@@ -8,6 +8,10 @@ const connection = mysql.createConnection({
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
   multipleStatements: true,
+  port: process.env.MYSQL_PORT,
+  ssl: {
+    rejectUnauthorized: false, // Tắt kiểm tra chứng chỉ
+  },
 });
 
 // Connect to the database
@@ -219,9 +223,8 @@ function setUserData(
   return new Promise((resolve, reject) => {
     const sqlInsertQuery = `
       INSERT INTO users (user_name, user_gmail, user_password, user_DOB, user_phone)
-      VALUES (?, ?, ?, ?, ?);
+      VALUES (?, ?, ?, STR_TO_DATE(?, '%Y-%m-%dT%H:%i:%s.%fZ'), ?);
     `;
-
     connection.query(
       sqlInsertQuery,
       [user_name, user_email, user_password, user_dob, user_phone],
@@ -229,9 +232,7 @@ function setUserData(
         if (err) {
           reject(err);
         } else {
-          // Kết quả trả về sau khi chèn dữ liệu mới
           console.log("Inserted record ID:", result.insertId);
-          console.log("new user id: ", result.insertId);
           resolve(result);
         }
       }
@@ -363,35 +364,88 @@ function putCardData(
 }
 
 //Get all giftcard orders(for admin usage)
-function getGiftCardOrders() {
-  return new Promise((resolve, reject) => {
-    const query = `
-      SELECT r.*, u.user_name, u.user_phone, u.user_gmail
-      FROM order_giftcard AS r
-      JOIN users AS u ON r.user_id = u.user_id
-    `;
+function getGiftCardOrders(page, sortBy) {
+  const limit = 4;
+  const offset = (page - 1) * limit;
 
-    connection.query(query, (err, result) => {
+  // Validate order parameter
+  const validOrders = ["sortingDate", "sortingPayment", "sortingAmount"];
+
+  if (!sortBy || !validOrders.includes(Object.keys(sortBy)[0])) {
+    return Promise.reject(new Error("Invalid order parameter"));
+  }
+
+  return new Promise((resolve, reject) => {
+    let query = "";
+    const sortKey = Object.keys(sortBy)[0];
+    const sortOrder = Object.values(sortBy)[0].toUpperCase();
+
+    switch (sortKey) {
+      case "sortingDate":
+        query = `
+          SELECT r.*, u.user_name, u.user_phone, u.user_gmail
+          FROM order_giftcard AS r
+          JOIN users AS u ON r.user_id = u.user_id
+          ORDER BY r.createdAt ${sortOrder}
+          LIMIT ? OFFSET ?`;
+        break;
+      case "sortingPayment":
+        query = `
+          SELECT r.*, u.user_name, u.user_phone, u.user_gmail
+          FROM order_giftcard AS r
+          JOIN users AS u ON r.user_id = u.user_id
+          ORDER BY r.card_status_id ${sortOrder}
+          LIMIT ? OFFSET ?`;
+        break;
+      case "sortingAmount":
+        query = `
+          SELECT r.*, u.user_name, u.user_phone, u.user_gmail
+          FROM order_giftcard AS r
+          JOIN users AS u ON r.user_id = u.user_id
+          ORDER BY CAST(r.user_amount AS DECIMAL(10,2)) ${sortOrder}
+          LIMIT ? OFFSET ?`;
+        break;
+      default:
+        return reject(new Error("Invalid order parameter"));
+    }
+
+    // Execute the query with limit and offset parameters
+    connection.query(query, [limit, offset], (err, result) => {
       if (err) {
         reject(err);
       } else {
-        resolve(result);
+        connection.query(
+          "SELECT COUNT(*) AS total FROM order_giftcard",
+          (err, [{ total }]) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve({
+                pagination: {
+                  total,
+                  totalPages: Math.ceil(total / limit),
+                },
+                data: result,
+              });
+            }
+          }
+        );
       }
     });
   });
 }
 
 //Get giftcard order by order id(for admin usage)
-function getGiftCardOrderByOrder(id) {
+function getGiftCardOrderById(id) {
   return new Promise((resolve, reject) => {
     connection.query(
-      `Select * From order_giftcard where card_order_id = ?`,
+      `Select r.*, u.user_name, u.user_phone, u.user_gmail From order_giftcard as r join users as u on r.user_id = u.user_id where card_order_id = ?`,
       id,
       (err, result) => {
         if (err) {
           reject(err);
         } else {
-          resolve(result);
+          resolve(result[0]);
         }
       }
     );
@@ -449,6 +503,15 @@ function setCardData(
     });
   });
 }
+const formatDateForMySQL = (dob) => {
+  const date = new Date(dob);
+  // Kiểm tra nếu date không hợp lệ
+  if (isNaN(date)) {
+    throw new Error("Ngày sinh không hợp lệ");
+  }
+  // Trả về định dạng YYYY-MM-DD
+  return date.toISOString().split("T")[0];
+};
 function updateUserData(
   user_name,
   user_gmail,
@@ -457,10 +520,26 @@ function updateUserData(
   user_phone,
   user_id
 ) {
+  const formattedDOB = formatDateForMySQL(user_DOB);
   return new Promise((resolve, reject) => {
     connection.query(
       "UPDATE users SET user_name = ?, user_gmail = ?, user_password = ?, user_DOB = ?, user_phone = ? WHERE user_id = ?",
-      [user_name, user_gmail, user_password, user_DOB, user_phone, user_id],
+      [user_name, user_gmail, user_password, formattedDOB, user_phone, user_id],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+function updateUserAcc(user_gmail, user_password) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "UPDATE users SET  user_password = ? WHERE user_gmail = ?",
+      [user_password, user_gmail],
       (err, result) => {
         if (err) {
           reject(err);
@@ -511,7 +590,7 @@ function setBookingData(
   guest_id
 ) {
   const query = `INSERT INTO reservation (user_id, table_date, table_time, number_people, message, guest_id)
-                 VALUES (?, ?, ?, ?, ?,?)`;
+                 VALUES (?, STR_TO_DATE(?, '%Y-%m-%dT%H:%i:%s.%fZ'), ?, ?, ?,?)`;
   const values = [
     user_id,
     table_date,
@@ -537,7 +616,6 @@ function getOnlyResData() {
     connection.query(`SELECT * FROM reservation `, (err, result) => {
       if (err) {
         reject(err);
-        console.log(err);
       } else {
         resolve(result);
       }
@@ -553,7 +631,6 @@ function getOnlyResDataById(id) {
       (err, result) => {
         if (err) {
           reject(err);
-          console.log(err);
         } else {
           resolve(result);
         }
@@ -568,7 +645,6 @@ function getAllAdmins() {
     connection.query(`SELECT * FROM admin `, (err, result) => {
       if (err) {
         reject(err);
-        console.log(err);
       } else {
         resolve(result);
       }
@@ -583,7 +659,6 @@ function getAllAdminById(id) {
       (err, result) => {
         if (err) {
           reject(err);
-          console.log(err);
         } else {
           resolve(result);
         }
@@ -593,20 +668,57 @@ function getAllAdminById(id) {
 }
 
 //get all Reservation(for admin)
-function getBookingData() {
+function getBookingById(id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "SELECT r.*, u.user_name, u.user_phone, u.user_gmail, g.guest_name, g.guest_phone, g.guest_gmail FROM reservation AS r LEFT JOIN users AS u ON r.user_id = u.user_id LEFT JOIN users_noacc AS g ON r.guest_id = g.guest_id WHERE reservation_id = ? LIMIT 1",
+      id,
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else if (result.length === 0) {
+          reject(new Error("Reservation not found"));
+        } else {
+          resolve(result[0]);
+        }
+      }
+    );
+  });
+}
+function getBookingData(page) {
+  const recordsPerPage = 4;
+  const offset = (page - 1) * recordsPerPage;
+
   return new Promise((resolve, reject) => {
     connection.query(
       `SELECT r.*, u.user_name, u.user_phone, u.user_gmail, 
         g.guest_name, g.guest_phone, g.guest_gmail
- FROM reservation AS r
- LEFT JOIN users AS u ON r.user_id = u.user_id
- LEFT JOIN users_noacc AS g ON r.guest_id = g.guest_id`,
+       FROM reservation AS r
+       LEFT JOIN users AS u ON r.user_id = u.user_id
+       LEFT JOIN users_noacc AS g ON r.guest_id = g.guest_id
+       LIMIT ? OFFSET ?`,
+      [recordsPerPage, offset],
       (err, result) => {
         if (err) {
           reject(err);
-          console.log(err);
         } else {
-          resolve(result);
+          connection.query(
+            `SELECT COUNT(*) AS total_records FROM reservation`,
+            (err, [{ total_records: total }]) => {
+              if (err) {
+                reject(err);
+              } else {
+                console.log(total);
+                resolve({
+                  pagination: {
+                    total: total,
+                    totalPages: Math.ceil(total / recordsPerPage),
+                  },
+                  data: result,
+                });
+              }
+            }
+          );
         }
       }
     );
@@ -664,7 +776,6 @@ function EmailExisted(user_email) {
           reject(err);
         } else {
           resolve(result.length);
-          console.log("Email Existed: " + result.length);
         }
       }
     );
@@ -680,7 +791,6 @@ function EmailExistedApartFromCurrentUser(user_email, current_user_id) {
           reject(err);
         } else {
           resolve(result.length);
-          console.log("Email Existed: " + result.length);
         }
       }
     );
@@ -696,7 +806,6 @@ function setBookingDataNoAcc(
   const query = `INSERT INTO reservation (guest_id, table_date, table_time, number_people, message)
                  VALUES (?, ?, ?, ?, ?)`;
   const values = [guest_id, table_date, table_time, number_people, message];
-  console.log(values);
   return new Promise((resolve, reject) => {
     connection.query(query, values, (error, result) => {
       if (error) {
@@ -721,9 +830,6 @@ function setUserNoAccData(user_name, user_email, user_phone) {
         if (err) {
           reject(err);
         } else {
-          // Kết quả trả về sau khi chèn dữ liệu mới
-          console.log("Inserted record ID:", result.insertId);
-          console.log("new user id: ", result.insertId);
           resolve(result);
         }
       }
@@ -740,7 +846,6 @@ function getUserNoAccByMail(userEmail) {
           reject(err);
         } else {
           resolve(result); // Resolve with guest_id value
-          console.log(result);
         }
       }
     );
@@ -758,7 +863,6 @@ function ModifyTitleContent(admin_id, content, title, image) {
           reject(err);
         } else {
           resolve(result);
-          console.log(result);
         }
       }
     );
@@ -771,7 +875,6 @@ function getTitleContent() {
         reject(err);
       } else {
         resolve(result);
-        console.log(result);
       }
     });
   });
@@ -783,7 +886,6 @@ function getOurStory() {
         reject(err);
       } else {
         resolve(result);
-        console.log(result);
       }
     });
   });
@@ -800,7 +902,6 @@ function ModifyOurStory(admin_id, content, title, bgimg, slideimg) {
           reject(err);
         } else {
           resolve(result);
-          console.log(result);
         }
       }
     );
@@ -818,7 +919,6 @@ function ModifyGallery(galleryImg, admin_id, img_id) {
           reject(err);
         } else {
           resolve(result);
-          console.log(result);
         }
       }
     );
@@ -836,7 +936,6 @@ function ModifyGalleryNotAdmin(galleryImg, img_id) {
           reject(err);
         } else {
           resolve(result);
-          console.log(result);
         }
       }
     );
@@ -850,7 +949,6 @@ function getGalleryImg() {
         reject(err);
       } else {
         resolve(result);
-        console.log(result);
       }
     });
   });
@@ -862,7 +960,6 @@ function getEvents() {
         reject(err);
       } else {
         resolve(result);
-        console.log(result);
       }
     });
   });
@@ -880,7 +977,6 @@ function ModifyEvents(admin_id, description, title, image, event_id) {
           reject(err);
         } else {
           resolve(result);
-          console.log(result);
         }
       }
     );
@@ -893,7 +989,6 @@ function getBeverage() {
         reject(err);
       } else {
         resolve(result);
-        console.log(result);
       }
     });
   });
@@ -911,12 +1006,45 @@ function ModifyBeverage(admin_id, name, description, price, image, bev_id) {
           reject(err);
         } else {
           resolve(result);
-          console.log(result);
         }
       }
     );
   });
 }
+const searchInDatabase = async (field, keyword) => {
+  return new Promise((resolve, reject) => {
+    let sql = "";
+
+    // Dựa trên field, chọn bảng và cột tương ứng
+    if (field === "user") {
+      sql = "SELECT * FROM users WHERE user_name LIKE ?";
+    } else if (field === "reservation") {
+      sql = `
+  SELECT r.*, u.user_name, user_phone, user_gmail
+  FROM reservation AS r
+  JOIN users AS u ON r.user_id = u.user_id
+  WHERE u.user_name LIKE ?
+`;
+    } else if (field === "giftcard") {
+      sql =
+        "SELECT r.*, u.user_name, user_phone, user_gmail FROM order_giftcard as r JOIN users as u ON r.user_id = u.user_id WHERE user_name LIKE ?";
+    } else {
+      reject(new Error("Invalid field"));
+      return;
+    }
+
+    const queryKeyword = `%${keyword}%`;
+
+    // Thực thi truy vấn SQL
+    connection.query(sql, [queryKeyword], (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    });
+  });
+};
 
 module.exports = {
   setUserData,
@@ -924,17 +1052,19 @@ module.exports = {
   getUserById,
   UpdatePassword,
   updateUserData,
+  updateUserAcc,
   deleteAcc,
   EmailExisted,
   getGiftCardOrders,
   getGiftCardOrderByUser,
-  getGiftCardOrderByOrder,
+  getGiftCardOrderById,
   setCardData,
   putCardData,
   getUserByEmail,
   removeCardData,
   setBookingData,
   getBookingData,
+  getBookingById,
   getOnlyResData,
   updateBookingData,
   deleteReservation,
@@ -956,5 +1086,6 @@ module.exports = {
   getBeverage,
   ModifyBeverage,
   EmailExistedApartFromCurrentUser,
+  searchInDatabase,
   connection,
 };

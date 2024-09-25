@@ -29,7 +29,6 @@ class AdminAuthController {
   }
   async getAdmin(req, res, next) {
     const { ad_id } = req.params;
-    console.log(ad_id);
     try {
       const admin = await getAllAdminById(ad_id);
       res.json({ id: admin[0].admin_id, name: admin[0].admin_name });

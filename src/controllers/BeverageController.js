@@ -7,7 +7,6 @@ class BeverageController {
       const result = await getBeverage();
       return res.status(200).json(result);
     } catch (error) {
-      console.log("error: ", error);
       return res.status(500).json("something wrong");
     }
   }

@@ -1,4 +1,4 @@
-const { getUsersData, deleteAcc } = require("../../dbsetup");
+const { getUsersData, deleteAcc, updateUserData } = require("../../dbsetup");
 
 class UserController {
   // hiển thị bài viết
@@ -24,7 +24,7 @@ class UserController {
     const { user_id } = req.body;
     Promise.all([deleteAcc(user_id)])
       .then(([deletedUser]) => {
-        res.json(deletedUser);
+        res.status(200).json(deletedUser);
       })
       .catch((err) => {
         console.error(err);

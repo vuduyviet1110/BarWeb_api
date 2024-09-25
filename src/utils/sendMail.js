@@ -25,10 +25,8 @@ const sendMail = ({ email, subject, html }) => {
     // Send email
     transporter.sendMail(message, (error, info) => {
       if (error) {
-        console.error("Error sending email:", error);
         reject(error); // Reject the promise with the error
       } else {
-        console.log("Email sent successfully:", info);
         resolve(info); // Resolve the promise with the info object
       }
     });

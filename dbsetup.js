@@ -451,18 +451,65 @@ function getGiftCardOrderById(id) {
     );
   });
 }
-
-//Get giftcard order by user id(for user usage)
-function getGiftCardOrderByUser(id) {
+function getGiftCardOrderByReceiverName(user_id, receiver_name) {
   return new Promise((resolve, reject) => {
     connection.query(
-      `Select * From order_giftcard where user_id = ?`,
-      id,
+      `SELECT r.*, u.user_name, u.user_phone, u.user_gmail 
+       FROM order_giftcard AS r 
+       JOIN users AS u ON r.user_id = u.user_id 
+       WHERE r.user_id = ? AND r.receiver_name LIKE ?`,
+      [user_id, `%${receiver_name}%`],
       (err, result) => {
         if (err) {
           reject(err);
         } else {
           resolve(result);
+        }
+      }
+    );
+  });
+}
+
+//Get giftcard order by user id(for user usage)
+function getGiftCardOrderByUser(id, page = null) {
+  const recordsPerPage = 2;
+  let offset = 0;
+  let limit = recordsPerPage;
+  if (page === null) {
+    limit = null;
+    offset = null;
+  } else {
+    offset = (page - 1) * recordsPerPage;
+  }
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `Select * From order_giftcard where user_id = ? ${
+        limit ? "LIMIT ? OFFSET ?" : ""
+      }`,
+      [...(limit ? [id, limit, offset] : [id])],
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          connection.query(
+            "SELECT COUNT(*) AS total_records FROM order_giftcard where user_id = ?",
+            [id],
+            (err, [{ total_records: total }]) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve({
+                  pagination: {
+                    total,
+                    totalPages: limit
+                      ? Math.ceil(total / recordsPerPage)
+                      : null,
+                  },
+                  data: result,
+                });
+              }
+            }
+          );
         }
       }
     );
@@ -1057,6 +1104,7 @@ module.exports = {
   EmailExisted,
   getGiftCardOrders,
   getGiftCardOrderByUser,
+  getGiftCardOrderByReceiverName,
   getGiftCardOrderById,
   setCardData,
   putCardData,
